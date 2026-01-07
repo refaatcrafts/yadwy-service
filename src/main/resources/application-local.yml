@@ -1,14 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/yadwy_db
+    url: jdbc:postgresql://localhost:5434/yadwy_db
     username: yadwy_user
     password: yadwy_pass
   flyway:
     user: yadwy_user
     password: yadwy_pass
-  jpa:
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-        use_sql_comments: true

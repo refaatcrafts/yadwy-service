@@ -1,0 +1,65 @@
+openapi: 3.0.3
+
+info:
+  title: Yadwy API
+  description: Yadwy Handmade Marketplace Backend API
+  version: 1.0.0
+  contact:
+    name: Backend Team
+    email: backend@yadwy.app
+
+servers:
+  - url: http://localhost:8080
+    description: Local development
+
+tags:
+  - name: Hello
+    description: Health check and greeting endpoints
+
+paths:
+  /api/v1/hello:
+    get:
+      operationId: sayHello
+      tags:
+        - Hello
+      summary: Say hello
+      description: Returns a greeting message
+      responses:
+        '200':
+          description: Successful greeting
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HelloResponse'
+
+
+components:
+  schemas:
+    HelloResponse:
+      type: object
+      required:
+        - message
+        - timestamp
+      properties:
+        message:
+          type: string
+          description: Greeting message
+          example: "Hello, Taager boy!"
+        timestamp:
+          type: string
+          format: date-time
+          description: Response timestamp
+          example: "2026-01-06T14:30:00Z"
+
+    ApiError:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          example: "VALIDATION_ERROR"
+        message:
+          type: string
+          example: "Invalid request"
