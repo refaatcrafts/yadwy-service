@@ -25,7 +25,7 @@ class AccountRepositoryImpl(
         )
 
         return Account(
-            id = AccountId(savedAccount.id!!),
+            accountId = AccountId(savedAccount.id!!),
             name = Name(savedAccount.name),
             phoneNumber = PhoneNumber(savedAccount.phoneNumber),
             passwordHash = encryptionService.encrypt(savedAccount.passwordHash)
@@ -37,7 +37,7 @@ class AccountRepositoryImpl(
         val accountDbo = accountDao.findByPhoneNumber(phone)
         return accountDbo?.let {
             Account(
-                id = AccountId(accountDbo.id!!),
+                accountId = AccountId(accountDbo.id!!),
                 name = Name(accountDbo.name),
                 phoneNumber = PhoneNumber(accountDbo.phoneNumber),
                 passwordHash = accountDbo.passwordHash,

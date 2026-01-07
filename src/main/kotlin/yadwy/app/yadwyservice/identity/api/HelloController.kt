@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDateTime
 
 @RestController
-class Hello : HelloApi {
+class HelloController : HelloApi {
 
     override fun sayHello(): ResponseEntity<HelloResponse> {
         return ResponseEntity.ok(HelloResponse("Hello World!", LocalDateTime.now()))
