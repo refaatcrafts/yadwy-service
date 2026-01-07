@@ -15,41 +15,274 @@ servers:
 tags:
   - name: Hello
     description: Health check and greeting endpoints
+  - name: Authentication
+    description: User authentication and registration endpoints
 
 paths:
-  /api/v1/hello:
-    get:
-      operationId: sayHello
+  /api/v1/auth/register/customer:
+    post:
+      operationId: registerCustomer
       tags:
-        - Hello
-      summary: Say hello
-      description: Returns a greeting message
+        - Authentication
+      summary: Register a new customer
+      description: Creates a new customer account and returns authentication tokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterCustomerRequestDto'
       responses:
-        '200':
-          description: Successful greeting
+        '201':
+          description: Customer registered successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HelloResponse'
+                $ref: '#/components/schemas/RegisterCustomerResponseDto'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Account already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /api/v1/auth/register/seller:
+    post:
+      operationId: registerSeller
+      tags:
+        - Authentication
+      summary: Register a new seller
+      description: Creates a new seller account and returns authentication tokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterSellerRequestDto'
+      responses:
+        '201':
+          description: Seller registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterSellerResponseDto'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Account already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /api/v1/auth/login:
+    post:
+      operationId: login
+      tags:
+        - Authentication
+      summary: Login
+      description: Authenticates user and returns access and refresh tokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequestDto'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponseDto'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /api/v1/auth/refresh:
+    post:
+      operationId: refreshAccessToken
+      tags:
+        - Authentication
+      summary: Refresh access token
+      description: Generates a new access token using a valid refresh token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequestDto'
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshTokenResponseDto'
+        '401':
+          description: Invalid or expired refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
 
 
 components:
   schemas:
-    HelloResponse:
+    RegisterCustomerRequestDto:
       type: object
       required:
-        - message
-        - timestamp
+        - name
+        - phoneNumber
+        - password
       properties:
-        message:
+        name:
           type: string
-          description: Greeting message
-          example: "Hello, Taager boy!"
-        timestamp:
+          minLength: 1
+          maxLength: 100
+          description: Customer full name
+          example: "Ahmed Hassan"
+        phoneNumber:
           type: string
-          format: date-time
-          description: Response timestamp
-          example: "2026-01-06T14:30:00Z"
+          pattern: '^\+?[1-9]\d{1,14}$'
+          description: Phone number in E.164 format
+          example: "+201234567890"
+        password:
+          type: string
+          minLength: 6
+          maxLength: 128
+          description: User password (minimum 6 characters)
+          example: "SecurePass123"
+
+    RegisterCustomerResponseDto:
+      type: object
+      required:
+        - accountId
+        - accessToken
+        - refreshToken
+      properties:
+        accountId:
+          type: integer
+          format: int64
+          description: Created account ID
+          example: 12345
+        accessToken:
+          type: string
+          description: JWT access token (expires in 24 hours)
+          example: "eyJhbGciOiJIUzI1NiIs..."
+        refreshToken:
+          type: string
+          description: JWT refresh token (expires in 30 days)
+          example: "eyJhbGciOiJIUzI1NiIs..."
+
+    RegisterSellerRequestDto:
+      type: object
+      required:
+        - name
+        - phoneNumber
+        - password
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Seller full name
+          example: "Fatima Ali"
+        phoneNumber:
+          type: string
+          pattern: '^\+?[1-9]\d{1,14}$'
+          description: Phone number in E.164 format
+          example: "+201234567890"
+        password:
+          type: string
+          minLength: 6
+          maxLength: 128
+          description: User password (minimum 6 characters)
+          example: "SecurePass123"
+
+    RegisterSellerResponseDto:
+      type: object
+      required:
+        - accountId
+        - accessToken
+        - refreshToken
+      properties:
+        accountId:
+          type: integer
+          format: int64
+          description: Created account ID
+          example: 12345
+        accessToken:
+          type: string
+          description: JWT access token (expires in 24 hours)
+          example: "eyJhbGciOiJIUzI1NiIs..."
+        refreshToken:
+          type: string
+          description: JWT refresh token (expires in 30 days)
+          example: "eyJhbGciOiJIUzI1NiIs..."
+
+    LoginRequestDto:
+      type: object
+      required:
+        - phoneNumber
+        - password
+      properties:
+        phoneNumber:
+          type: string
+          description: Registered phone number
+          example: "+201234567890"
+        password:
+          type: string
+          description: User password
+          example: "SecurePass123"
+
+    LoginResponseDto:
+      type: object
+      required:
+        - accessToken
+        - refreshToken
+      properties:
+        accessToken:
+          type: string
+          description: JWT access token (expires in 24 hours)
+          example: "eyJhbGciOiJIUzI1NiIs..."
+        refreshToken:
+          type: string
+          description: JWT refresh token (expires in 30 days)
+          example: "eyJhbGciOiJIUzI1NiIs..."
+
+    RefreshTokenRequestDto:
+      type: object
+      required:
+        - refreshToken
+      properties:
+        refreshToken:
+          type: string
+          description: Valid refresh token
+          example: "eyJhbGciOiJIUzI1NiIs..."
+
+    RefreshTokenResponseDto:
+      type: object
+      required:
+        - accessToken
+      properties:
+        accessToken:
+          type: string
+          description: New JWT access token (expires in 24 hours)
+          example: "eyJhbGciOiJIUzI1NiIs..."
 
     ApiError:
       type: object

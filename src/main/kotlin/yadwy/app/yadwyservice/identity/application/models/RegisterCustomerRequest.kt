@@ -1,3 +1,7 @@
 package yadwy.app.yadwyservice.identity.application.models
 
-data class RegisterCustomerRequest()
+data class RegisterCustomerRequest(
+    val name: String,
+    val phoneNumber: String,
+    val password: String
+)

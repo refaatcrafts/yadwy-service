@@ -1,4 +1,7 @@
 package yadwy.app.yadwyservice.identity.application.models
 
-class RegisterSellerRequest {
-}
+data class RegisterSellerRequest(
+    val name: String,
+    val phoneNumber: String,
+    val password: String
+)

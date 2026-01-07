@@ -3,6 +3,7 @@ package yadwy.app.yadwyservice.identity.infrastructure.database.dbo
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Sequence
 import org.springframework.data.relational.core.mapping.Table
+import yadwy.app.yadwyservice.identity.domain.models.Role
 
 @Table("accounts", schema = "identity")
 data class AccountDbo(
@@ -12,5 +13,5 @@ data class AccountDbo(
     val name: String,
     val phoneNumber: String,
     val passwordHash: String,
-//    val roles: MutableSet<Role> = mutableSetOf()
+    val roles: List<Role> = emptyList()
 )

@@ -26,8 +26,8 @@ class SecurityConfig(
         return http
             .csrf { it.disable() }
             .authorizeHttpRequests { auth ->
-                // Allow public access to Auth Endpoints
-                auth.requestMatchers("/api/identity/auth/**").permitAll()
+                auth.requestMatchers("/api/v1/auth/**").permitAll()
+                    .requestMatchers("/api/v1/hello").permitAll()
                     .requestMatchers("/swagger-ui.html/**").permitAll()
                     .requestMatchers("/swagger-ui/**").permitAll()
                     .requestMatchers("/v3/api-docs/**").permitAll()

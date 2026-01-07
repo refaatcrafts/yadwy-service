@@ -2,7 +2,8 @@ package yadwy.app.yadwyservice.identity.domain.contracts
 
 import yadwy.app.yadwyservice.identity.domain.models.Account
 
-interface AccountRepository{
+interface AccountRepository {
     fun save(account: Account): Account
     fun findByPhoneNumber(phone: String): Account?
+    fun findById(accountId: Long): Account?
 }

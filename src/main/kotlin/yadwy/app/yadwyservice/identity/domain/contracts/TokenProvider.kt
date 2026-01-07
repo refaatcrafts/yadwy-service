@@ -5,4 +5,5 @@ import yadwy.app.yadwyservice.identity.domain.models.Account
 interface TokenProvider {
     fun createAccessToken(account: Account): String
     fun createRefreshToken(account: Account): String
+    fun validateRefreshToken(token: String): Long
 }

@@ -1,4 +1,7 @@
 package yadwy.app.yadwyservice.identity.application.models
 
-class RegisterCustomerResponse {
-}
+data class RegisterCustomerResponse(
+    val accountId: Long,
+    val accessToken: String,
+    val refreshToken: String
+)
