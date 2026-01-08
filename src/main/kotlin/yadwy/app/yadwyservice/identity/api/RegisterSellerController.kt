@@ -1,6 +1,6 @@
 package yadwy.app.yadwyservice.identity.api
 
-import app.yadwy.api.AuthenticationApi
+import app.yadwy.api.SellerRegistrationApi
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
@@ -10,7 +10,7 @@ import yadwy.app.yadwyservice.identity.application.usecases.RegisterSeller
 @RestController
 class RegisterSellerController(
     private val registerSeller: RegisterSeller
-) : AuthenticationApi {
+) : SellerRegistrationApi {
 
     override fun registerSeller(registerSellerRequestDto: app.yadwy.model.RegisterSellerRequestDto):
         ResponseEntity<app.yadwy.model.RegisterSellerResponseDto> {

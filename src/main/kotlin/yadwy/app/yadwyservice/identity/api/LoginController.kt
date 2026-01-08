@@ -1,6 +1,6 @@
 package yadwy.app.yadwyservice.identity.api
 
-import app.yadwy.api.AuthenticationApi
+import app.yadwy.api.LoginApi
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
 import yadwy.app.yadwyservice.identity.application.models.LoginRequest
@@ -9,7 +9,7 @@ import yadwy.app.yadwyservice.identity.application.usecases.Login
 @RestController
 class LoginController(
     private val login: Login
-) : AuthenticationApi {
+) : LoginApi {
 
     override fun login(loginRequestDto: app.yadwy.model.LoginRequestDto):
         ResponseEntity<app.yadwy.model.LoginResponseDto> {
