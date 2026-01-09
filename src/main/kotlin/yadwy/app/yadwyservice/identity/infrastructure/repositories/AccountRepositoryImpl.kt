@@ -6,13 +6,14 @@ import yadwy.app.yadwyservice.identity.domain.models.Account
 import yadwy.app.yadwyservice.identity.domain.models.AccountId
 import yadwy.app.yadwyservice.identity.domain.models.Name
 import yadwy.app.yadwyservice.identity.domain.models.PhoneNumber
-import yadwy.app.yadwyservice.identity.domain.models.Role
 import yadwy.app.yadwyservice.identity.infrastructure.database.dao.AccountDao
 import yadwy.app.yadwyservice.identity.infrastructure.database.dbo.AccountDbo
+import yadwy.app.yadwyservice.sharedkernel.domain.contracts.EventPublisher
 
 @Component
 class AccountRepositoryImpl(
-    private val accountDao: AccountDao
+    private val accountDao: AccountDao,
+    private val eventPublisher: EventPublisher
 ) : AccountRepository {
     override fun save(account: Account): Account {
         val savedAccount = accountDao.save(
@@ -23,6 +24,9 @@ class AccountRepositoryImpl(
                 roles = account.getRoles().toList()
             )
         )
+
+        val events = account.occurredEvents()
+        eventPublisher.publishAll(events)
 
         return Account(
             accountId = AccountId(savedAccount.id!!),
