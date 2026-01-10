@@ -39,7 +39,7 @@ class Account(
                 roles = roles
             )
 
-            account.raiseEvent(AccountCreatedEvent(account.accountId, roles.toSet()))
+            account.raiseEvent(AccountCreatedEvent(account.accountId, name, roles.toSet()))
             return account
         }
     }
