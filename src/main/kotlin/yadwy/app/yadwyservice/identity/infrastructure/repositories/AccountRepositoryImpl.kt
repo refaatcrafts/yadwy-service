@@ -3,6 +3,7 @@ package yadwy.app.yadwyservice.identity.infrastructure.repositories
 import org.springframework.stereotype.Component
 import yadwy.app.yadwyservice.identity.domain.contracts.AccountRepository
 import yadwy.app.yadwyservice.identity.domain.contracts.EventPublisherDispatcher
+import yadwy.app.yadwyservice.identity.domain.events.AccountCreatedEvent
 import yadwy.app.yadwyservice.identity.domain.models.Account
 import yadwy.app.yadwyservice.identity.domain.models.AccountId
 import yadwy.app.yadwyservice.identity.domain.models.Name
@@ -24,10 +25,19 @@ class AccountRepositoryImpl(
                 roles = account.getRoles().toList()
             )
         )
-        eventPublisherDispatcher.dispatchAll(account.occurredEvents())
+
+        val persistedAccountId = AccountId(savedAccount.id!!)
+
+        // Map events to use the persisted ID instead of the placeholder (0)
+        val eventsWithCorrectId = account.occurredEvents().map { event ->
+            when (event) {
+                is AccountCreatedEvent -> event.copy(accountId = persistedAccountId)
+            }
+        }
+        eventPublisherDispatcher.dispatchAll(eventsWithCorrectId)
 
         return Account(
-            accountId = AccountId(savedAccount.id!!),
+            accountId = persistedAccountId,
             name = Name(savedAccount.name),
             phoneNumber = PhoneNumber(savedAccount.phoneNumber),
             passwordHash = savedAccount.passwordHash,
