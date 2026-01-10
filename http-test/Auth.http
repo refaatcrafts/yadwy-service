@@ -4,7 +4,7 @@ Content-Type: application/json
 
 {
   "name": "John Doe",
-  "phoneNumber": "+1234567890",
+  "phoneNumber": "+1233563890",
   "password": "securePassword123"
 }
 
@@ -23,7 +23,7 @@ POST http://localhost:8080/api/v1/auth/login
 Content-Type: application/json
 
 {
-  "phoneNumber": "+1234567892",
+  "phoneNumber": "79",
   "password": "securePassword123"
 }
 
@@ -33,5 +33,5 @@ POST http://localhost:8080/api/v1/auth/refresh
 Content-Type: application/json
 
 {
-  "refreshToken": "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJ5YWR3eS1zZXJ2aWNlIiwic3ViIjoiKzEyMzQ1Njc4OTAiLCJpZCI6MSwiZXhwIjoxNzcwNDU3OTc5LCJ0eXBlIjoicmVmcmVzaCIsImlhdCI6MTc2Nzg2NTk3OX0.znxKEQ140qImejX-FOzkD7YWEs3yZBzFuvTAmj9jdZk"
+  "refreshToken": "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJ5YWR3eS1zZXJ2aWNlIiwic3ViIjoiNjc5IiwiaWQiOjEyLCJleHAiOjE3NzA2NTI1OTYsInR5cGUiOiJyZWZyZXNoIiwiaWF0IjoxNzY4MDYwNTk2fQ.ZAmO8t2NDDRvWNzRyaFaJ4-lAx5zjP89A1FryRLCN9M"
 }
