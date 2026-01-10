@@ -2,17 +2,18 @@ package yadwy.app.yadwyservice.identity.infrastructure.repositories
 
 import org.springframework.stereotype.Component
 import yadwy.app.yadwyservice.identity.domain.contracts.AccountRepository
+import yadwy.app.yadwyservice.identity.domain.contracts.EventPublisherDispatcher
 import yadwy.app.yadwyservice.identity.domain.models.Account
 import yadwy.app.yadwyservice.identity.domain.models.AccountId
 import yadwy.app.yadwyservice.identity.domain.models.Name
 import yadwy.app.yadwyservice.identity.domain.models.PhoneNumber
-import yadwy.app.yadwyservice.identity.domain.models.Role
 import yadwy.app.yadwyservice.identity.infrastructure.database.dao.AccountDao
 import yadwy.app.yadwyservice.identity.infrastructure.database.dbo.AccountDbo
 
 @Component
 class AccountRepositoryImpl(
-    private val accountDao: AccountDao
+    private val accountDao: AccountDao,
+    private val eventPublisherDispatcher: EventPublisherDispatcher
 ) : AccountRepository {
     override fun save(account: Account): Account {
         val savedAccount = accountDao.save(
@@ -23,6 +24,7 @@ class AccountRepositoryImpl(
                 roles = account.getRoles().toList()
             )
         )
+        eventPublisherDispatcher.dispatchAll(account.occurredEvents())
 
         return Account(
             accountId = AccountId(savedAccount.id!!),

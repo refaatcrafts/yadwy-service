@@ -6,4 +6,8 @@ import yadwy.app.yadwyservice.sharedkernel.domain.models.base.DomainEvent
 
 sealed interface IdentityEvent : DomainEvent
 
-data class AccountCreatedEvent(val accountId: AccountId, val roles: Set<Role>) : IdentityEvent
+data class AccountCreatedEvent(
+    val accountId: AccountId,
+    val name: String,
+    val roles: Set<Role>
+) : IdentityEvent
