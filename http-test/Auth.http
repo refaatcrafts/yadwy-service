@@ -13,8 +13,8 @@ POST {{baseUrl}}/api/v1/auth/register/seller
 Content-Type: application/json
 
 {
-  "name": "John Doe",
-  "phoneNumber": "+1234567811",
+  "name": "{{ $random.alphabetic(7) }}",
+  "phoneNumber": {{$random.integer(10, 1000)}},
   "password": "securePassword123"
 }
 
