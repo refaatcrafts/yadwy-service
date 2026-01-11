@@ -20,6 +20,8 @@ class ListCategories(
         return if (request.includeChildren) {
             buildTree()
         } else {
+            // When parentId is null, returns root categories (categories with no parent)
+            // When parentId is provided, returns direct children of that category
             categoryRepository.findByParentId(request.parentId).map { it.toResponse() }
         }
     }
