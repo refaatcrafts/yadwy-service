@@ -1,0 +1,53 @@
+### Created Categores
+POST {{baseUrl}}/api/v1/categories
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "name": {
+    "ar": "Hassan Ar",
+    "en": "Hassan En"
+  },
+  "slug": "test-test2",
+  "imageUrl": "{{$random.internet.url}}",
+  "description": {
+    "ar":"{{$random.shakespeare.asYouLikeItQuote}}",
+    "en":"{{$random.shakespeare.asYouLikeItQuote}}"
+  }
+}
+
+### Created a child category
+POST {{baseUrl}}/api/v1/categories
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "name": {
+    "ar": "child child ar 1",
+    "en": "child child En 1"
+  },
+  "slug": "test-child-child-of-choild-1",
+  "imageUrl": "{{$random.internet.url}}",
+  "description": {
+    "ar":"{{$random.shakespeare.asYouLikeItQuote}}",
+    "en":"{{$random.shakespeare.asYouLikeItQuote}}"
+  },
+  "parentId": 4
+}
+
+
+### Get the root(parents) categories
+GET {{baseUrl}}/api/v1/categories
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+### Get all the catgeories with there childes
+GET {{baseUrl}}/api/v1/categories?include=children
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+
+### Get all the catgeories with there childes
+GET {{baseUrl}}/api/v1/categories?parentId=3
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}

@@ -23,6 +23,16 @@ tags:
     description: Customer registration endpoint
   - name: SellerRegistration
     description: Seller registration endpoint
+  - name: CreateCategory
+    description: Create category endpoint
+  - name: UpdateCategory
+    description: Update category endpoint
+  - name: DeleteCategory
+    description: Delete category endpoint
+  - name: GetCategory
+    description: Get category endpoint
+  - name: ListCategories
+    description: List categories endpoint
 
 paths:
   /api/v1/auth/register/customer:
@@ -145,9 +155,180 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiError'
 
+  /api/v1/categories:
+    post:
+      operationId: createCategory
+      tags:
+        - CreateCategory
+      summary: Create a new category
+      description: Creates a new product category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCategoryRequestDto'
+      responses:
+        '201':
+          description: Category created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponseDto'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Slug already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    get:
+      operationId: listCategories
+      tags:
+        - ListCategories
+      summary: List categories
+      description: |
+        Returns categories with optional filtering and nesting.
+        - Without parameters: returns root categories (parentId = null)
+        - With parentId: returns direct children of that category
+        - With include=children: returns full tree structure with nested children
+      parameters:
+        - name: parentId
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+          description: Parent category ID (omit for root categories)
+        - name: include
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [children]
+          description: Include nested children in response (use 'children' for tree structure)
+      responses:
+        '200':
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CategoryResponseDto'
+
+  /api/v1/categories/{id}:
+    get:
+      operationId: getCategory
+      tags:
+        - GetCategory
+      summary: Get category by ID
+      description: Returns a single category by its ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Category ID
+      responses:
+        '200':
+          description: Category details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponseDto'
+        '404':
+          description: Category not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    put:
+      operationId: updateCategory
+      tags:
+        - UpdateCategory
+      summary: Update category
+      description: Updates an existing category
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Category ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCategoryRequestDto'
+      responses:
+        '200':
+          description: Category updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponseDto'
+        '404':
+          description: Category not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    delete:
+      operationId: deleteCategory
+      tags:
+        - DeleteCategory
+      summary: Delete category
+      description: Deletes a category (fails if category has children)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Category ID
+      responses:
+        '204':
+          description: Category deleted successfully
+        '404':
+          description: Category not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Category has child categories
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
 
 components:
   schemas:
+    LocalizedDto:
+      type: object
+      required:
+        - ar
+      properties:
+        ar:
+          type: string
+          description: Arabic text
+          example: "إلكترونيات"
+        en:
+          type: string
+          description: English text
+          example: "Electronics"
+
     RegisterCustomerRequestDto:
       type: object
       required:
@@ -302,3 +483,78 @@ components:
         message:
           type: string
           example: "Invalid request"
+
+    CreateCategoryRequestDto:
+      type: object
+      required:
+        - name
+        - slug
+      properties:
+        name:
+          $ref: '#/components/schemas/LocalizedDto'
+        slug:
+          type: string
+          maxLength: 100
+#          pattern: '^[a-z0-9]+(-[a-z0-9]+)*$'
+          description: URL-friendly identifier
+          example: "electronics"
+        imageUrl:
+          type: string
+          maxLength: 500
+          description: Category image URL
+          example: "https://example.com/images/electronics.png"
+        description:
+          $ref: '#/components/schemas/LocalizedDto'
+        parentId:
+          type: integer
+          format: int64
+          description: Parent category ID (null for root categories)
+          example: null
+
+    UpdateCategoryRequestDto:
+      type: object
+      properties:
+        name:
+          $ref: '#/components/schemas/LocalizedDto'
+        imageUrl:
+          type: string
+          maxLength: 500
+          description: Category image URL
+          example: "https://example.com/images/electronics.png"
+        description:
+          $ref: '#/components/schemas/LocalizedDto'
+
+    CategoryResponseDto:
+      type: object
+      required:
+        - id
+        - name
+        - slug
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Category ID
+          example: 1
+        name:
+          $ref: '#/components/schemas/LocalizedDto'
+        slug:
+          type: string
+          description: URL-friendly identifier
+          example: "electronics"
+        description:
+          $ref: '#/components/schemas/LocalizedDto'
+        imageUrl:
+          type: string
+          description: Category image URL
+          example: "https://example.com/images/electronics.png"
+        parentId:
+          type: integer
+          format: int64
+          description: Parent category ID
+          example: null
+        children:
+          type: array
+          description: Child categories (only present when include=children)
+          items:
+            $ref: '#/components/schemas/CategoryResponseDto'
