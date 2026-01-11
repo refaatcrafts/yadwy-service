@@ -19,13 +19,16 @@ Content-Type: application/json
 }
 
 ### Login
-POST http://localhost:8080/api/v1/auth/login
+POST {{baseUrl}}/api/v1/auth/login
 Content-Type: application/json
 
 {
-  "phoneNumber": "79",
+  "phoneNumber": "+1233563890",
   "password": "securePassword123"
 }
+
+> {% client.global.set("accessToken", response.body.accessToken); %}
+
 
 
 ### Refresh Token
