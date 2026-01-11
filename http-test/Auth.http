@@ -36,5 +36,10 @@ POST http://localhost:8080/api/v1/auth/refresh
 Content-Type: application/json
 
 {
-  "refreshToken": "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJ5YWR3eS1zZXJ2aWNlIiwic3ViIjoiNjc5IiwiaWQiOjEyLCJleHAiOjE3NzA2NTI1OTYsInR5cGUiOiJyZWZyZXNoIiwiaWF0IjoxNzY4MDYwNTk2fQ.ZAmO8t2NDDRvWNzRyaFaJ4-lAx5zjP89A1FryRLCN9M"
+  "refreshToken": "eyJhbdGciOiJIUzI1NiJ9.eyJpc3MiOiJ5YWR3eS1zZXJ2aWNlIiwic3ViIjoiNjc5IiwiaWQiOjEyLCJleHAiOjE3NzA2NTI1OTYsInR5cGUiOiJyZWZyZXNoIiwiaWF0IjoxNzY4MDYwNTk2fQ.ZAmO8t2NDDRvWNzRyaFaJ4-lAx5zjP89A1FryRLCN9M"
 }
+
+
+
+###
+GET {{baseUrl}}/actuator/health

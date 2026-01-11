@@ -13,11 +13,6 @@ services:
       SPRING_DATASOURCE_PASSWORD: yadwy_pass
       SPRING_FLYWAY_USER: yadwy_user
       SPRING_FLYWAY_PASSWORD: yadwy_pass
-
-      MANAGEMENT_OTLP_METRICS_EXPORT_URL: http://grafana-lgtm:4318/v1/metrics
-      MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT: http://grafana-lgtm:4318/v1/traces
-      MANAGEMENT_OPENTELEMETRY_LOGGING_EXPORT_OTLP_ENDPOINT: http://grafana-lgtm:4318/v1/logs
-
       # JWT Configuration (externalized - set in .env file)
       JWT_KEY: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
 
@@ -57,18 +52,6 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
-    networks:
-      - yadwy-network
-    restart: unless-stopped
-
-  # Grafana LGTM Stack (Logs, Metrics, Traces)
-  grafana-lgtm:
-    image: grafana/otel-lgtm:latest
-    container_name: yadwy-grafana
-    ports:
-      - "3000:3000"   # Grafana UI
-      - "4317:4317"   # OTLP gRPC receiver
-      - "4318:4318"   # OTLP HTTP receiver
     networks:
       - yadwy-network
     restart: unless-stopped

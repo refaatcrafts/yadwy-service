@@ -1,3 +1,4 @@
+
 spring:
   application:
     name: yadwy-service
@@ -13,20 +14,26 @@ spring:
 management:
   tracing:
     sampling:
-      probability: 1.0  # 100% sampling for development
+      probability: 1.0
   otlp:
     metrics:
       export:
-        url: http://localhost:4318/v1/metrics
+        url: https://otlp-gateway-prod-me-central-1.grafana.net/otlp/v1/metrics
+        headers:
+          Authorization: "Basic MTQ5MTkzNDpnbGNfZXlKdklqb2lNVFl6T0RJek9TSXNJbTRpT2lKemRHRmpheTB4TkRreE9UTTBMVzkwYkhBdGQzSnBkR1V0ZVdGa2Qza3RZWEJ3SWl3aWF5STZJbHBWUmtGTmRFdzNXV3h1Tm1ZeE56SllPVGMyYlRrMFFpSXNJbTBpT25zaWNpSTZJbkJ5YjJRdGJXVXRZMlZ1ZEhKaGJDMHhJbjE5"
   opentelemetry:
     tracing:
       export:
         otlp:
-          endpoint: http://localhost:4318/v1/traces
+          endpoint: https://otlp-gateway-prod-me-central-1.grafana.net/otlp/v1/traces
+          headers:
+            Authorization: "Basic MTQ5MTkzNDpnbGNfZXlKdklqb2lNVFl6T0RJek9TSXNJbTRpT2lKemRHRmpheTB4TkRreE9UTTBMVzkwYkhBdGQzSnBkR1V0ZVdGa2Qza3RZWEJ3SWl3aWF5STZJbHBWUmtGTmRFdzNXV3h1Tm1ZeE56SllPVGMyYlRrMFFpSXNJbTBpT25zaWNpSTZJbkJ5YjJRdGJXVXRZMlZ1ZEhKaGJDMHhJbjE5"
     logging:
       export:
         otlp:
-          endpoint: http://localhost:4318/v1/logs
+          endpoint: https://otlp-gateway-prod-me-central-1.grafana.net/otlp/v1/logs
+          headers:
+            Authorization: "Basic MTQ5MTkzNDpnbGNfZXlKdklqb2lNVFl6T0RJek9TSXNJbTRpT2lKemRHRmpheTB4TkRreE9UTTBMVzkwYkhBdGQzSnBkR1V0ZVdGa2Qza3RZWEJ3SWl3aWF5STZJbHBWUmtGTmRFdzNXV3h1Tm1ZeE56SllPVGMyYlRrMFFpSXNJbTBpT25zaWNpSTZJbkJ5YjJRdGJXVXRZMlZ1ZEhKaGJDMHhJbjE5"
 
 jwt:
   key: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
