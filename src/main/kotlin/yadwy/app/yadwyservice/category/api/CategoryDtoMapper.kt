@@ -15,4 +15,6 @@ fun CategoryResponse.toDto(): CategoryResponseDto = CategoryResponseDto(
     children = children?.map { it.toDto() }
 )
 
-private fun Localized.toDto() = LocalizedDto(ar = ar, en = en.ifBlank { null })
+fun Localized.toDto() = LocalizedDto(ar = ar, en = en.ifBlank { null })
+
+fun LocalizedDto.toDomain() = Localized(ar = ar, en = en ?: "")

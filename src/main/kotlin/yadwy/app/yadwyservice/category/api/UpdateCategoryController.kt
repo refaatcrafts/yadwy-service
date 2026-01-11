@@ -28,5 +28,3 @@ class UpdateCategoryController(
         return ResponseEntity.ok(response.toDto())
     }
 }
-
-private fun LocalizedDto.toDomain() = Localized(ar = ar, en = en ?: "")

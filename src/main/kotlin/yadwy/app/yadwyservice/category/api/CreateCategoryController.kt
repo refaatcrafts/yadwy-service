@@ -30,5 +30,3 @@ class CreateCategoryController(
         return ResponseEntity.status(HttpStatus.CREATED).body(response.toDto())
     }
 }
-
-private fun LocalizedDto.toDomain() = Localized(ar = ar, en = en ?: "")
