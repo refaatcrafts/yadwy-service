@@ -8,7 +8,7 @@ Authorization: Bearer {{accessToken}}
     "ar": "Hassan Ar",
     "en": "Hassan En"
   },
-  "slug": "test-test2",
+  "slug": "test-test4",
   "imageUrl": "{{$random.internet.url}}",
   "description": {
     "ar":"{{$random.shakespeare.asYouLikeItQuote}}",
@@ -23,16 +23,16 @@ Authorization: Bearer {{accessToken}}
 
 {
   "name": {
-    "ar": "child child ar 1",
-    "en": "child child En 1"
+    "ar": "child child ar 2",
+    "en": "child child En 2"
   },
-  "slug": "test-child-child-of-choild-1",
+  "slug": "test-child-27",
   "imageUrl": "{{$random.internet.url}}",
   "description": {
     "ar":"{{$random.shakespeare.asYouLikeItQuote}}",
     "en":"{{$random.shakespeare.asYouLikeItQuote}}"
   },
-  "parentId": 4
+  "parentId": 8
 }
 
 

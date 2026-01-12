@@ -1,249 +1,126 @@
-# AGENTS.md
+# CLAUDE.md
 
-This file provides guidance to AI agents and coding assistants when working with code in this repository.
+## What This Is
 
-## Project Overview
+Kotlin Spring Boot 4.0 microservice for a handmade marketplace. DDD + Spring Modulith. Spring Data JDBC (not JPA - this matters for how you write repositories).
 
-**yadwy-service** is a Kotlin-based Spring Boot 4.0 microservice for a handmade marketplace platform. The project follows Domain-Driven Design (DDD) principles and uses Spring Modulith for modular monolith architecture.
+## Commands You'll Actually Use
 
-**Tech Stack:**
-- Kotlin 2.2.21 with Java 24 toolchain
-- Spring Boot 4.0.0
-- Spring Modulith 2.0.0
-- Spring Data JDBC (not JPA)
-- PostgreSQL with Flyway migrations
-- Spring Security with OAuth2 JWT Resource Server
-- OpenAPI 3.0 with code generation
-
-## Common Commands
-
-### Build and Run
 ```bash
-# Build the project
-./gradlew build
-
-# Run the application (requires PostgreSQL)
-./gradlew bootRun
-
-# Start PostgreSQL via Docker Compose
-docker compose up -d
-
-# Run with local profile (connects to Docker Compose PostgreSQL on port 5434)
-./gradlew bootRun --args='--spring.profiles.active=local'
+./gradlew build                    # Build everything (runs openApiGenerate automatically)
+./gradlew bootRun --args='--spring.profiles.active=local'  # Run locally
+docker compose up -d               # Start PostgreSQL first
+./gradlew test --tests 'TestName'  # Run specific test
 ```
 
-### Testing
-```bash
-# Run all tests
-./gradlew test
-
-# Run specific test
-./gradlew test --tests 'yadwy.app.yadwyservice.ApplicationTests'
-```
-
-### Code Generation
-```bash
-# Generate OpenAPI models and API interfaces
-./gradlew openApiGenerate
-
-# Note: compileKotlin depends on openApiGenerate, so it runs automatically during build
-```
-
-### Database
-```bash
-# Flyway migrations run automatically on application startup
-# Migration files: src/main/resources/db/migration/V*.sql
-```
-
-## Architecture
-
-### Spring Modulith Structure
-The codebase is organized into bounded contexts (modules) following Spring Modulith conventions:
-
-```
-src/main/kotlin/yadwy/app/yadwyservice/
-├── identity/          # Authentication & authorization module
-├── customer/          # Customer domain module (placeholder)
-├── seller/            # Seller domain module (placeholder)
-└── sharedkernel/      # Shared domain primitives
-```
-
-Each module is a top-level package under `yadwyservice` and represents a bounded context. Spring Modulith enforces module boundaries and enables event-driven communication between modules.
-
-### Module Internal Structure (DDD Layering)
-Each module follows hexagonal/clean architecture with DDD tactical patterns:
+## The Architecture (Don't Fight It)
 
 ```
 <module>/
-├── api/                      # API Controllers (implements generated OpenAPI interfaces)
-├── application/              # Application layer
-│   ├── models/              # DTOs for use cases
-│   └── usecases/            # Use case implementations (extends UseCase<T, R>)
-├── domain/                   # Domain layer (pure business logic)
-│   ├── contracts/           # Repository and service interfaces
-│   ├── events/              # Domain events
-│   ├── exceptions/          # Domain-specific exceptions
-│   └── models/              # Aggregates, entities, value objects
-└── infrastructure/           # Infrastructure layer
-    ├── database/            # DAO and DBO classes
-    ├── repositories/        # Repository implementations
-    ├── security/            # Security configuration
-    └── service/             # Infrastructure service implementations
+├── api/           # Controllers implement generated OpenAPI interfaces
+├── application/   # Use cases only - no business logic here
+├── domain/        # ALL business logic lives here
+└── infrastructure/# Database stuff, external services
 ```
 
-### Key Design Patterns
+## Critical Rules
 
-**Domain Models (in `sharedkernel/domain/models/base/`):**
-- `DomainModel`: Marker interface for all domain types
-- `ValueObject`: Immutable objects identified by properties (use `@JvmInline value class` for single-property VOs)
-- `Entity<T>`: Objects with identity, equality based on ID
-- `AggregateRoot<T, U>`: Entry point to aggregates, raises domain events
-- `DomainEvent`: Immutable facts about business events
+**Domain logic stays in domain models. Period.**
 
-**Application Layer:**
-- `UseCase<T, R>`: Base class for use cases with request/response
-- `UseCaseWithoutRequest<R>`: Use cases without request parameters
-- `EventHandler<T, R>`: Handlers for domain events
+Why: We've had bugs from validation scattered across layers. If an aggregate can be invalid, something's wrong.
 
-**Example Pattern (Identity module):**
-1. Controller implements generated OpenAPI interface (`CustomerRegistrationApi`)
-2. Controller delegates to use case (`RegisterCustomer`)
-3. Use case orchestrates domain logic and repositories
-4. Domain aggregate (`Account`) contains business rules and raises events
-5. Repository implementation (`AccountRepositoryImpl`) maps between domain models and database objects
-
-### API-First Approach
-
-**This project follows an API-first development workflow:**
-
-1. **Define the contract** in `src/main/resources/openapi/openapi.yaml`
-2. **Generate code** using `./gradlew openApiGenerate` (happens automatically during build)
-3. **Implement controllers** that extend the generated API interfaces
-
-**Generated Code:**
-- Location: `build/generated/src/main/kotlin/`
-- Packages: `app.yadwy.api` (API interfaces), `app.yadwy.model` (request/response DTOs)
-- Generated interfaces include Spring MVC annotations (`@RequestMapping`, `@PostMapping`, etc.) and bean validation
-
-**Example - Login Endpoint:**
-
-**Step 1: Define contract in `openapi.yaml`**
-```yaml
-paths:
-  /api/v1/auth/login:
-    post:
-      operationId: login
-      tags:
-        - Login
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LoginRequestDto'
-      responses:
-        '200':
-          description: Login successful
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LoginResponseDto'
-```
-
-**Step 2: Code generation creates** `LoginApi` interface in `app.yadwy.api` package with method signature and Spring annotations
-
-**Step 3: Implement the controller:**
 ```kotlin
-@RestController
-class LoginController(
-    private val login: Login  // Use case
-) : LoginApi {
+// ✅ Validation inside aggregate
+fun changePassword(current: String, new: String) {
+    require(passwordEncoder.matches(current, this.passwordHash)) { "Wrong password" }
+    require(new.length >= 8) { "Too short" }
+    this.passwordHash = passwordEncoder.encode(new)
+    raise(PasswordChangedEvent(this.id))
+}
 
-    override fun login(loginRequestDto: LoginRequestDto): ResponseEntity<LoginResponseDto> {
-        // Map generated DTO → application request model
-        val request = LoginRequest(
-            phoneNumber = loginRequestDto.phoneNumber,
-            password = loginRequestDto.password
-        )
-
-        // Execute use case
-        val response = login.execute(request)
-
-        // Map application response → generated DTO
-        return ResponseEntity.ok(
-            LoginResponseDto(
-                accessToken = response.accessToken,
-                refreshToken = response.refreshToken
-            )
-        )
+// ❌ Never do this - logic leaked to use case
+class ChangePassword : UseCase<...> {
+    override fun execute(request: Request) {
+        if (request.newPassword.length < 8) throw ValidationException() // NO
+        account.passwordHash = encoder.encode(request.newPassword)      // NO - direct mutation
     }
 }
 ```
 
-**Key Points:**
-- Controllers are lightweight adapters that delegate to use cases
-- Mapping happens at controller level: Generated DTOs ↔ Application models
-- Never manually edit generated code in `build/generated/`
-- To add/modify endpoints: update `openapi.yaml`, regenerate, then implement/update controller
+**Value objects validate themselves:**
 
-## Module Descriptions
+```kotlin
+@JvmInline
+value class PhoneNumber private constructor(val value: String) : ValueObject {
+    companion object {
+        fun create(value: String): PhoneNumber {
+            require(value.matches(Regex("^01[0125][0-9]{8}$"))) { "Invalid Egyptian phone" }
+            return PhoneNumber(value)
+        }
+    }
+}
+```
 
-### identity
-Authentication and authorization module providing:
-- Customer and seller registration with JWT token generation
-- Login with phone number and password
-- Access token refresh using refresh tokens
-- Role-based authentication (CUSTOMER, SELLER roles)
+## API-First Workflow
 
-**Key Domain Model:** `Account` aggregate with value objects `Name`, `PhoneNumber`, `AccountId`, and `Role` enum
+1. Edit `src/main/resources/openapi/openapi.yaml`
+2. Build regenerates code automatically
+3. Implement controller extending generated interface
 
-**Security:**
-- JWT-based stateless authentication
-- HS256 algorithm with symmetric key (configured in `application.yml`)
-- Access tokens expire in 24 hours, refresh tokens in 30 days
-- Public endpoints: `/api/v1/auth/**`, Swagger UI
-- All other endpoints require valid JWT
+Why: Generated DTOs have validation annotations. Controllers are just adapters - map DTOs to application models, call use case, map response back.
 
-### sharedkernel
-Contains shared domain primitives and base classes used across all modules:
-- DDD base types (Entity, AggregateRoot, ValueObject, DomainEvent)
-- Base use case classes
-- Cross-cutting domain concepts
+```kotlin
+@RestController
+class LoginController(private val login: Login) : LoginApi {
+    override fun login(dto: LoginRequestDto): ResponseEntity<LoginResponseDto> {
+        val response = login.execute(LoginRequest(dto.phoneNumber, dto.password))
+        return ResponseEntity.ok(LoginResponseDto(response.accessToken, response.refreshToken))
+    }
+}
+```
 
-## Configuration
+Never edit `build/generated/` - it gets overwritten.
 
-**Environment Profiles:**
-- `application.yml`: Base configuration (JWT key, Flyway settings)
-- `application-local.yml`: Local development (PostgreSQL on localhost:5434)
-- `application-prod.yml`: Production configuration
+## RESTful URLs
 
-**Database:**
-- PostgreSQL database via Docker Compose: `yadwy_db` on port 5434
-- Credentials: `yadwy_user` / `yadwy_pass`
-- Flyway manages schema migrations automatically
+- `/api/v1/products` not `/api/v1/getProducts`
+- `/sellers/{sellerId}/products` for nested resources
+- HTTP methods do the verbs: GET/POST/PUT/PATCH/DELETE
 
-## Testing APIs
-HTTP test files located in `http-test/`:
-- `Auth.http`: Test authentication endpoints (registration, login, refresh)
-- Use IntelliJ HTTP Client or similar tools
+Why: Consistency matters when the API grows. We don't want mixed conventions.
 
-## Important Conventions
+## Data Flow
 
-**Naming:**
-- Use case classes: Imperative verbs (e.g., `RegisterCustomer`, `Login`)
-- Domain events: Past tense (e.g., `AccountCreatedEvent`)
-- Repository methods: Standard patterns (`save`, `findById`, `findByPhoneNumber`)
+`Generated DTO → Application Request → Domain Model → Application Response → Generated DTO`
 
-**Data Flow:**
-- API DTOs (generated) → Application Request Models → Domain Models → Application Response Models → API DTOs (generated)
-- Never expose domain models directly in API responses
-- Repository implementations handle mapping between domain models and database objects (DBO)
+Never expose domain models in API responses. Why: Domain models change for business reasons, API contracts change for client reasons. Keep them decoupled.
 
-**Security:**
-- Never commit sensitive data (the current JWT key in `application.yml` should be externalized in production)
-- Spring Security configured in `SecurityConfig` with JWT resource server
+## Module Boundaries
 
-**API Development:**
-- Follow the API-first workflow: define contract in `openapi.yaml` → generate code → implement controller
-- Controllers are lightweight adapters that only map DTOs and delegate to use cases
-- All business logic belongs in use cases and domain models, never in controllers
+Spring Modulith enforces these. Modules talk through domain events, not direct calls.
+
+Current modules:
+- `identity/` - Auth, JWT, registration
+- `customer/` - (placeholder)
+- `seller/` - (placeholder)
+- `sharedkernel/` - Base types (Entity, AggregateRoot, ValueObject, UseCase)
+
+## Database
+
+PostgreSQL on port 5434 (Docker Compose). Flyway migrations in `src/main/resources/db/migration/V*.sql` run on startup.
+
+## Security
+
+JWT with HS256. Public: `/api/v1/auth/**`, Swagger UI. Everything else needs valid token.
+
+The JWT key in `application.yml` is for dev only - don't use in prod.
+
+## Naming Conventions
+
+- Use cases: `RegisterCustomer`, `Login` (imperative)
+- Events: `AccountCreatedEvent` (past tense)
+- Repos: `save`, `findById`, `findByPhoneNumber`
+
+## Testing
+
+HTTP files in `http-test/` for manual API testing. Use IntelliJ HTTP Client.
