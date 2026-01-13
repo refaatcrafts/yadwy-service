@@ -1,6 +1,8 @@
-package yadwy.app.yadwyservice.identity.api
+package yadwy.app.yadwyservice.identity.infrastructure.controllers
 
 import app.yadwy.api.CustomerRegistrationApi
+import app.yadwy.model.RegisterCustomerRequestDto
+import app.yadwy.model.RegisterCustomerResponseDto
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
@@ -12,8 +14,8 @@ class RegisterCustomerController(
     private val registerCustomer: RegisterCustomer
 ) : CustomerRegistrationApi {
 
-    override fun registerCustomer(registerCustomerRequestDto: app.yadwy.model.RegisterCustomerRequestDto):
-        ResponseEntity<app.yadwy.model.RegisterCustomerResponseDto> {
+    override fun registerCustomer(registerCustomerRequestDto: RegisterCustomerRequestDto):
+        ResponseEntity<RegisterCustomerResponseDto> {
 
         val request = RegisterCustomerRequest(
             name = registerCustomerRequestDto.name,
@@ -24,7 +26,7 @@ class RegisterCustomerController(
         val response = registerCustomer.execute(request)
 
         return ResponseEntity.status(HttpStatus.CREATED).body(
-            app.yadwy.model.RegisterCustomerResponseDto(
+            RegisterCustomerResponseDto(
                 accountId = response.accountId,
                 accessToken = response.accessToken,
                 refreshToken = response.refreshToken
