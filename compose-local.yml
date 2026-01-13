@@ -1,0 +1,10 @@
+services:
+  postgres:
+    image: postgres
+    container_name: yadwy-postgres
+    environment:
+      POSTGRES_DB: yadwy_db
+      POSTGRES_USER: yadwy_user
+      POSTGRES_PASSWORD: yadwy_pass
+    ports:
+      - "5434:5432"

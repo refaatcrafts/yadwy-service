@@ -1,7 +1,5 @@
 CREATE SCHEMA IF NOT EXISTS product;
 
-CREATE SEQUENCE product.products_id_seq;
-
 CREATE TABLE product.products
 (
     id               BIGSERIAL PRIMARY KEY,
