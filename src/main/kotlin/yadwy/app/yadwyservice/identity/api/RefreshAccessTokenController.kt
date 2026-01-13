@@ -1,8 +1,7 @@
-package yadwy.app.yadwyservice.identity.infrastructure.controllers
+package yadwy.app.yadwyservice.identity.api
 
 import app.yadwy.api.TokenApi
 import app.yadwy.model.RefreshTokenRequestDto
-import app.yadwy.model.RefreshTokenResponseDto
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
 import yadwy.app.yadwyservice.identity.application.models.RefreshTokenRequest
@@ -14,7 +13,7 @@ class RefreshAccessTokenController(
 ) : TokenApi {
 
     override fun refreshAccessToken(refreshTokenRequestDto: RefreshTokenRequestDto):
-        ResponseEntity<RefreshTokenResponseDto> {
+        ResponseEntity<app.yadwy.model.RefreshTokenResponseDto> {
 
         val request = RefreshTokenRequest(
             refreshToken = refreshTokenRequestDto.refreshToken
@@ -23,7 +22,7 @@ class RefreshAccessTokenController(
         val response = refreshAccessToken.execute(request)
 
         return ResponseEntity.ok(
-            RefreshTokenResponseDto(
+            app.yadwy.model.RefreshTokenResponseDto(
                 accessToken = response.accessToken
             )
         )

@@ -1,8 +1,6 @@
-package yadwy.app.yadwyservice.identity.infrastructure.controllers
+package yadwy.app.yadwyservice.identity.api
 
 import app.yadwy.api.LoginApi
-import app.yadwy.model.LoginRequestDto
-import app.yadwy.model.LoginResponseDto
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
 import yadwy.app.yadwyservice.identity.application.models.LoginRequest
@@ -13,8 +11,8 @@ class LoginController(
     private val login: Login
 ) : LoginApi {
 
-    override fun login(loginRequestDto: LoginRequestDto):
-        ResponseEntity<LoginResponseDto> {
+    override fun login(loginRequestDto: app.yadwy.model.LoginRequestDto):
+        ResponseEntity<app.yadwy.model.LoginResponseDto> {
 
         val request = LoginRequest(
             phoneNumber = loginRequestDto.phoneNumber,
@@ -24,7 +22,7 @@ class LoginController(
         val response = login.execute(request)
 
         return ResponseEntity.ok(
-            LoginResponseDto(
+            app.yadwy.model.LoginResponseDto(
                 accessToken = response.accessToken,
                 refreshToken = response.refreshToken
             )

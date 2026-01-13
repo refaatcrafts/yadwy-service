@@ -31,10 +31,6 @@ class SellerRepositoryImpl(
         return sellerDao.findByAccountId(accountId)?.toDomain()
     }
 
-    override fun existsById(sellerId: Long): Boolean {
-        return sellerDao.existsById(sellerId)
-    }
-
     private fun SellerDbo.toDomain(): Seller = Seller(
         sellerId = SellerId(id!!),
         accountId = accountId,

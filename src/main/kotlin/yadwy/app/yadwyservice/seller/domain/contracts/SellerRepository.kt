@@ -6,5 +6,4 @@ interface SellerRepository {
     fun save(seller: Seller): Seller
     fun findById(sellerId: Long): Seller?
     fun findByAccountId(accountId: Long): Seller?
-    fun existsById(sellerId: Long): Boolean
 }
