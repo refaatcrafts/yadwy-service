@@ -1,4 +1,4 @@
-package yadwy.app.yadwyservice.category.api
+package yadwy.app.yadwyservice.category.infrastructure.controllers
 
 import app.yadwy.api.DeleteCategoryApi
 import org.springframework.http.ResponseEntity

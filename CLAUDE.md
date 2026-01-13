@@ -17,11 +17,17 @@ docker compose up -d               # Start PostgreSQL first
 
 ```
 <module>/
-├── api/           # Controllers implement generated OpenAPI interfaces
+├── api/           # Public module API for inter-module communication (NOT HTTP controllers)
 ├── application/   # Use cases only - no business logic here
 ├── domain/        # ALL business logic lives here
-└── infrastructure/# Database stuff, external services
+└── infrastructure/
+    ├── controllers/  # HTTP controllers (implement OpenAPI interfaces)
+    ├── gateway/      # Implementations of external module gateways
+    ├── repositories/ # Database implementations
+    └── database/     # DAOs, DBOs
 ```
+
+See `docs/ModuleInterCommunication.md` for detailed inter-module communication patterns.
 
 ## Critical Rules
 
@@ -97,13 +103,21 @@ Never expose domain models in API responses. Why: Domain models change for busin
 
 ## Module Boundaries
 
-Spring Modulith enforces these. Modules talk through domain events, not direct calls.
+Spring Modulith enforces these. Modules communicate through:
+1. **Public Module APIs** (`api/` package) - For synchronous queries between modules
+2. **Domain Events** - For asynchronous reactions to business actions
+
+**Never** access another module's repositories, domain models, or internal types directly.
 
 Current modules:
 - `identity/` - Auth, JWT, registration
-- `customer/` - (placeholder)
-- `seller/` - (placeholder)
+- `customer/` - Customer profiles
+- `seller/` - Seller profiles and store management
+- `product/` - Product catalog management
+- `category/` - Product categories
 - `sharedkernel/` - Base types (Entity, AggregateRoot, ValueObject, UseCase)
+
+See `docs/ModuleInterCommunication.md` for the Gateway pattern.
 
 ## Database
 

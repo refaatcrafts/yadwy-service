@@ -23,7 +23,7 @@ POST {{baseUrl}}/api/v1/auth/login
 Content-Type: application/json
 
 {
-  "phoneNumber": "+1233563890",
+  "phoneNumber": "201",
   "password": "securePassword123"
 }
 

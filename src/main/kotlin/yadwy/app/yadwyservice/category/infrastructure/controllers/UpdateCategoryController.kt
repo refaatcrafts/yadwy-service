@@ -1,14 +1,12 @@
-package yadwy.app.yadwyservice.category.api
+package yadwy.app.yadwyservice.category.infrastructure.controllers
 
 import app.yadwy.api.UpdateCategoryApi
 import app.yadwy.model.CategoryResponseDto
-import app.yadwy.model.LocalizedDto
 import app.yadwy.model.UpdateCategoryRequestDto
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
 import yadwy.app.yadwyservice.category.application.models.UpdateCategoryRequest
 import yadwy.app.yadwyservice.category.application.usecases.UpdateCategory
-import yadwy.app.yadwyservice.sharedkernel.domain.models.Localized
 
 @RestController
 class UpdateCategoryController(
