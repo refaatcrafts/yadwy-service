@@ -2,6 +2,7 @@ package yadwy.app.yadwyservice.cart.domain.models
 
 import yadwy.app.yadwyservice.cart.domain.events.*
 import yadwy.app.yadwyservice.cart.domain.exceptions.CartItemNotFoundException
+import yadwy.app.yadwyservice.cart.domain.exceptions.InsufficientStockException
 import yadwy.app.yadwyservice.sharedkernel.domain.models.Amount
 import yadwy.app.yadwyservice.sharedkernel.domain.models.Quantity
 import yadwy.app.yadwyservice.sharedkernel.domain.models.base.AggregateRoot
@@ -30,8 +31,21 @@ class Cart internal constructor(
         ): Cart = Cart(cartId, accountId, items)
     }
 
-    fun addItem(productId: Long, quantity: Quantity, unitPrice: Amount) {
+    fun addItem(
+        productId: Long,
+        quantity: Quantity,
+        unitPrice: Amount,
+        getAvailableStock: (Long) -> Int
+    ) {
         val existingItem = items.find { it.getProductId() == productId }
+        val currentQty = existingItem?.getQuantity()?.value ?: 0
+        val totalQuantity = currentQty + quantity.value
+        val availableStock = getAvailableStock(productId)
+
+        if (totalQuantity > availableStock) {
+            throw InsufficientStockException(productId, totalQuantity, availableStock)
+        }
+
         if (existingItem != null) {
             existingItem.increaseQuantity(quantity)
         } else {
@@ -47,7 +61,11 @@ class Cart internal constructor(
         raiseEvent(ItemRemovedFromCartEvent(cartId, productId))
     }
 
-    fun updateItemQuantity(productId: Long, quantity: Quantity) {
+    fun updateItemQuantity(
+        productId: Long,
+        quantity: Quantity,
+        getAvailableStock: (Long) -> Int
+    ) {
         if (quantity == Quantity.ZERO) {
             removeItem(productId)
             return
@@ -55,6 +73,12 @@ class Cart internal constructor(
 
         val item = items.find { it.getProductId() == productId }
             ?: throw CartItemNotFoundException(productId)
+
+        val availableStock = getAvailableStock(productId)
+        if (quantity.value > availableStock) {
+            throw InsufficientStockException(productId, quantity.value, availableStock)
+        }
+
         item.updateQuantity(quantity)
         raiseEvent(ItemAddedToCartEvent(cartId, productId, quantity, item.getUnitPrice()))
     }

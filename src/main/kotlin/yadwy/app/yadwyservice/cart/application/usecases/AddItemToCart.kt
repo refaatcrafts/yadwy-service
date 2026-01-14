@@ -5,7 +5,6 @@ import yadwy.app.yadwyservice.cart.application.models.AddItemToCartRequest
 import yadwy.app.yadwyservice.cart.application.models.CartResponse
 import yadwy.app.yadwyservice.cart.domain.contracts.CartRepository
 import yadwy.app.yadwyservice.cart.domain.contracts.ProductGateway
-import yadwy.app.yadwyservice.cart.domain.exceptions.InsufficientStockException
 import yadwy.app.yadwyservice.cart.domain.exceptions.ProductNotFoundException
 import yadwy.app.yadwyservice.cart.domain.models.Cart
 import yadwy.app.yadwyservice.sharedkernel.application.UseCase
@@ -25,19 +24,16 @@ class AddItemToCart(
         val unitPrice = productGateway.getProductPrice(request.productId)
             ?: throw ProductNotFoundException(request.productId)
 
-        val availableStock = productGateway.getAvailableStock(request.productId) ?: 0
-
         val cart = cartRepository.findByAccountId(request.accountId)
             ?: Cart.create(request.accountId)
 
-        val existingItem = cart.getItems().find { it.getProductId() == request.productId }
-        val totalQuantity = (existingItem?.getQuantity()?.value ?: 0) + request.quantity
-        if (totalQuantity > availableStock) {
-            throw InsufficientStockException(request.productId, totalQuantity, availableStock)
-        }
+        cart.addItem(
+            productId = request.productId,
+            quantity = Quantity.of(request.quantity),
+            unitPrice = unitPrice,
+            getAvailableStock = { productGateway.getAvailableStock(it) ?: 0 }
+        )
 
-        cart.addItem(request.productId, Quantity.of(request.quantity), unitPrice)
-        val saved = cartRepository.save(cart)
-        return saved.toResponse()
+        return cartRepository.save(cart).toResponse()
     }
 }

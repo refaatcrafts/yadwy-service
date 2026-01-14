@@ -14,3 +14,9 @@ Authorization: Bearer {{accessToken}}
 GET {{baseUrl}}/api/v1/cart
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
+
+
+### Clear the cart
+DELETE {{baseUrl}}/api/v1/cart
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
