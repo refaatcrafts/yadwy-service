@@ -18,23 +18,18 @@ class AddItemToCart(
 ) : UseCase<AddItemToCartRequest, CartResponse>() {
 
     override fun execute(request: AddItemToCartRequest): CartResponse {
-        // Validate product exists
         if (!productGateway.productExists(request.productId)) {
             throw ProductNotFoundException(request.productId)
         }
 
-        // Get product price for snapshot
         val unitPrice = productGateway.getProductPrice(request.productId)
             ?: throw ProductNotFoundException(request.productId)
 
-        // Validate stock availability
         val availableStock = productGateway.getAvailableStock(request.productId) ?: 0
 
-        // Get or create cart
         val cart = cartRepository.findByAccountId(request.accountId)
             ?: Cart.create(request.accountId)
 
-        // Check total quantity if item already in cart
         val existingItem = cart.getItems().find { it.getProductId() == request.productId }
         val totalQuantity = (existingItem?.getQuantity()?.value ?: 0) + request.quantity
         if (totalQuantity > availableStock) {

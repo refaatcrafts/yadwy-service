@@ -8,3 +8,9 @@ Authorization: Bearer {{accessToken}}
   "quantity": 2
 }
 
+
+
+### Get the cart
+GET {{baseUrl}}/api/v1/cart
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}

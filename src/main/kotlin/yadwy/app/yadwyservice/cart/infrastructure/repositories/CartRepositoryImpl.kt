@@ -7,7 +7,6 @@ import yadwy.app.yadwyservice.cart.domain.models.CartId
 import yadwy.app.yadwyservice.cart.domain.models.CartItem
 import yadwy.app.yadwyservice.cart.domain.models.CartItemId
 import yadwy.app.yadwyservice.cart.infrastructure.database.dao.CartDao
-import yadwy.app.yadwyservice.cart.infrastructure.database.dao.CartItemDao
 import yadwy.app.yadwyservice.cart.infrastructure.database.dbo.CartDbo
 import yadwy.app.yadwyservice.cart.infrastructure.database.dbo.CartItemDbo
 import yadwy.app.yadwyservice.sharedkernel.domain.models.Amount
@@ -15,62 +14,43 @@ import yadwy.app.yadwyservice.sharedkernel.domain.models.Quantity
 
 @Component
 class CartRepositoryImpl(
-    private val cartDao: CartDao,
-    private val cartItemDao: CartItemDao,
+    private val cartDao: CartDao
 ) : CartRepository {
 
     override fun save(cart: Cart): Cart {
-        // Save cart
         val cartDbo = CartDbo(
             id = if (cart.getId().id == 0L) null else cart.getId().id,
-            accountId = cart.getAccountId()
+            accountId = cart.getAccountId(),
+            items = cart.getItems().map { item ->
+                CartItemDbo(
+                    id = if (item.getId().id == 0L) null else item.getId().id,
+                    productId = item.getProductId(),
+                    quantity = item.getQuantity().value,
+                    unitPrice = item.getUnitPrice().value
+                )
+            }.toSet()
         )
-        val savedCart = cartDao.save(cartDbo)
-        val cartId = savedCart.id!!
-
-        // Delete existing items and save new ones
-        cartItemDao.deleteByCartId(cartId)
-        val savedItems = cart.getItems().map { item ->
-            val itemDbo = CartItemDbo(
-                id = null,
-                cartId = cartId,
-                productId = item.getProductId(),
-                quantity = item.getQuantity().value,
-                unitPrice = item.getUnitPrice().value
-            )
-            cartItemDao.save(itemDbo)
-        }
-
-        return Cart.reconstitute(
-            cartId = CartId(cartId),
-            accountId = savedCart.accountId,
-            items = savedItems.map { it.toDomain() }.toMutableList()
-        )
+        val saved = cartDao.save(cartDbo)
+        return saved.toDomain()
     }
 
     override fun findByAccountId(accountId: Long): Cart? {
-        val cartDbo = cartDao.findByAccountId(accountId)
-        val items = cartItemDao.findByCartId(cartDbo?.id!!)
-        return Cart.reconstitute(
-            cartId = CartId(cartDbo.id),
-            accountId = cartDbo.accountId,
-            items = items.map { it.toDomain() }.toMutableList()
-        )
+        return cartDao.findByAccountId(accountId)?.toDomain()
     }
 
     override fun findById(cartId: Long): Cart? {
-        val cartDbo = cartDao.findById(cartId).orElse(null) ?: return null
-        val items = cartItemDao.findByCartId(cartDbo.id!!)
-        return Cart.reconstitute(
-            cartId = CartId(cartDbo.id),
-            accountId = cartDbo.accountId,
-            items = items.map { it.toDomain() }.toMutableList()
-        )
+        return cartDao.findById(cartId).orElse(null)?.toDomain()
     }
 
     override fun existsByAccountId(accountId: Long): Boolean {
         return cartDao.existsByAccountId(accountId)
     }
+
+    private fun CartDbo.toDomain(): Cart = Cart.reconstitute(
+        cartId = CartId(id!!),
+        accountId = accountId,
+        items = items.map { it.toDomain() }.toMutableList()
+    )
 
     private fun CartItemDbo.toDomain(): CartItem = CartItem.reconstitute(
         cartItemId = CartItemId(id!!),

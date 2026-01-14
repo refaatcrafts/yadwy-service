@@ -8,7 +8,6 @@ import java.math.BigDecimal
 data class CartItemDbo(
     @Id
     val id: Long? = null,
-    val cartId: Long,
     val productId: Long,
     val quantity: Int,
     val unitPrice: BigDecimal
