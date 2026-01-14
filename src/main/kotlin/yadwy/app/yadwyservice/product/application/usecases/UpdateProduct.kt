@@ -6,8 +6,8 @@ import yadwy.app.yadwyservice.product.application.models.UpdateProductRequest
 import yadwy.app.yadwyservice.product.domain.contracts.ProductRepository
 import yadwy.app.yadwyservice.product.domain.exceptions.ProductNotFoundException
 import yadwy.app.yadwyservice.product.domain.exceptions.ProductNotOwnedException
-import yadwy.app.yadwyservice.product.domain.models.Money
 import yadwy.app.yadwyservice.sharedkernel.application.UseCase
+import yadwy.app.yadwyservice.sharedkernel.domain.models.Amount
 
 @Component
 class UpdateProduct(
@@ -34,8 +34,8 @@ class UpdateProduct(
         // Update pricing if provided
         if (request.price != null || request.compareAtPrice != null) {
             product.updatePricing(
-                price = request.price?.let { Money.of(it) },
-                compareAtPrice = request.compareAtPrice?.let { Money.of(it) }
+                price = request.price?.let { Amount.of(it) },
+                compareAtPrice = request.compareAtPrice?.let { Amount.of(it) }
             )
         }
 

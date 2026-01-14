@@ -1,8 +1,9 @@
 package yadwy.app.yadwyservice.cart.domain.events
 
 import yadwy.app.yadwyservice.cart.domain.models.CartId
+import yadwy.app.yadwyservice.sharedkernel.domain.models.Amount
+import yadwy.app.yadwyservice.sharedkernel.domain.models.Quantity
 import yadwy.app.yadwyservice.sharedkernel.domain.models.base.DomainEvent
-import java.math.BigDecimal
 
 sealed interface CartEvent : DomainEvent
 
@@ -14,8 +15,8 @@ data class CartCreatedEvent(
 data class ItemAddedToCartEvent(
     val cartId: CartId,
     val productId: Long,
-    val quantity: Int,
-    val unitPrice: BigDecimal
+    val quantity: Quantity,
+    val unitPrice: Amount
 ) : CartEvent
 
 data class ItemRemovedFromCartEvent(

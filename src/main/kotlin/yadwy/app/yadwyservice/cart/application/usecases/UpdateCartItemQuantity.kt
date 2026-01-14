@@ -8,6 +8,7 @@ import yadwy.app.yadwyservice.cart.domain.contracts.ProductGateway
 import yadwy.app.yadwyservice.cart.domain.exceptions.CartNotFoundException
 import yadwy.app.yadwyservice.cart.domain.exceptions.InsufficientStockException
 import yadwy.app.yadwyservice.sharedkernel.application.UseCase
+import yadwy.app.yadwyservice.sharedkernel.domain.models.Quantity
 
 @Component
 class UpdateCartItemQuantity(
@@ -27,7 +28,7 @@ class UpdateCartItemQuantity(
             }
         }
 
-        cart.updateItemQuantity(request.productId, request.quantity)
+        cart.updateItemQuantity(request.productId, Quantity.of(request.quantity))
         val saved = cartRepository.save(cart)
         return saved.toResponse()
     }

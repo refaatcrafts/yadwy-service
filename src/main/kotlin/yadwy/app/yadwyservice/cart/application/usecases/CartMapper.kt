@@ -15,7 +15,7 @@ fun Cart.toResponse() = CartResponse(
 fun CartItem.toResponse() = CartItemResponse(
     id = getId().id,
     productId = getProductId(),
-    quantity = getQuantity(),
+    quantity = getQuantity().value,
     unitPrice = getUnitPrice(),
     subtotal = getSubtotal()
 )

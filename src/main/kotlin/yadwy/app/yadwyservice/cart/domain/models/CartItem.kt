@@ -1,25 +1,21 @@
 package yadwy.app.yadwyservice.cart.domain.models
 
+import yadwy.app.yadwyservice.sharedkernel.domain.models.Amount
+import yadwy.app.yadwyservice.sharedkernel.domain.models.Quantity
 import yadwy.app.yadwyservice.sharedkernel.domain.models.base.Entity
-import java.math.BigDecimal
 
 class CartItem internal constructor(
     private val cartItemId: CartItemId,
     private val productId: Long,
-    private var quantity: Int,
-    private val unitPrice: BigDecimal
+    private var quantity: Quantity,
+    private val unitPrice: Amount
 ) : Entity<CartItemId>(cartItemId) {
-
-    init {
-        require(quantity >= 1) { "Quantity must be at least 1" }
-        require(unitPrice >= BigDecimal.ZERO) { "Unit price cannot be negative" }
-    }
 
     companion object {
         fun create(
             productId: Long,
-            quantity: Int,
-            unitPrice: BigDecimal
+            quantity: Quantity,
+            unitPrice: Amount
         ): CartItem {
             return CartItem(
                 cartItemId = CartItemId(0),
@@ -32,22 +28,20 @@ class CartItem internal constructor(
         fun reconstitute(
             cartItemId: CartItemId,
             productId: Long,
-            quantity: Int,
-            unitPrice: BigDecimal
+            quantity: Quantity,
+            unitPrice: Amount
         ): CartItem = CartItem(cartItemId, productId, quantity, unitPrice)
     }
 
-    fun updateQuantity(newQuantity: Int) {
-        require(newQuantity >= 1) { "Quantity must be at least 1" }
+    fun updateQuantity(newQuantity: Quantity) {
         this.quantity = newQuantity
     }
 
-    fun increaseQuantity(amount: Int) {
-        require(amount >= 1) { "Amount must be at least 1" }
-        this.quantity += amount
+    fun increaseQuantity(amount: Quantity) {
+        this.quantity = this.quantity + amount
     }
 
-    fun getSubtotal(): BigDecimal = unitPrice.multiply(BigDecimal(quantity))
+    fun getSubtotal(): Amount = unitPrice * quantity
 
     fun getId() = cartItemId
     fun getProductId() = productId

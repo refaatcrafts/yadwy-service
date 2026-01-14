@@ -1,18 +1,18 @@
 package yadwy.app.yadwyservice.cart.api
 
-import java.math.BigDecimal
+import yadwy.app.yadwyservice.sharedkernel.domain.models.Amount
 
 data class CartDto(
     val id: Long,
     val accountId: Long,
     val items: List<CartItemDto>,
-    val total: BigDecimal
+    val total: Amount
 )
 
 data class CartItemDto(
     val id: Long,
     val productId: Long,
     val quantity: Int,
-    val unitPrice: BigDecimal,
-    val subtotal: BigDecimal
+    val unitPrice: Amount,
+    val subtotal: Amount
 )

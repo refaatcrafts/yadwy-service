@@ -9,6 +9,7 @@ import yadwy.app.yadwyservice.cart.domain.exceptions.InsufficientStockException
 import yadwy.app.yadwyservice.cart.domain.exceptions.ProductNotFoundException
 import yadwy.app.yadwyservice.cart.domain.models.Cart
 import yadwy.app.yadwyservice.sharedkernel.application.UseCase
+import yadwy.app.yadwyservice.sharedkernel.domain.models.Quantity
 
 @Component
 class AddItemToCart(
@@ -35,12 +36,12 @@ class AddItemToCart(
 
         // Check total quantity if item already in cart
         val existingItem = cart.getItems().find { it.getProductId() == request.productId }
-        val totalQuantity = (existingItem?.getQuantity() ?: 0) + request.quantity
+        val totalQuantity = (existingItem?.getQuantity()?.value ?: 0) + request.quantity
         if (totalQuantity > availableStock) {
             throw InsufficientStockException(request.productId, totalQuantity, availableStock)
         }
 
-        cart.addItem(request.productId, request.quantity, unitPrice)
+        cart.addItem(request.productId, Quantity.of(request.quantity), unitPrice)
         val saved = cartRepository.save(cart)
         return saved.toResponse()
     }

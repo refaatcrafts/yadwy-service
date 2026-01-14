@@ -3,7 +3,7 @@ package yadwy.app.yadwyservice.cart.infrastructure.gateway
 import org.springframework.stereotype.Service
 import yadwy.app.yadwyservice.cart.domain.contracts.ProductGateway
 import yadwy.app.yadwyservice.product.api.ProductAPI
-import java.math.BigDecimal
+import yadwy.app.yadwyservice.sharedkernel.domain.models.Amount
 
 @Service
 class ProductGatewayImpl(
@@ -14,7 +14,7 @@ class ProductGatewayImpl(
         return productAPI.existsById(productId)
     }
 
-    override fun getProductPrice(productId: Long): BigDecimal? {
+    override fun getProductPrice(productId: Long): Amount? {
         return productAPI.getPrice(productId)
     }
 

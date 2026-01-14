@@ -2,11 +2,11 @@ package yadwy.app.yadwyservice.product.infrastructure.repositories
 
 import org.springframework.stereotype.Component
 import yadwy.app.yadwyservice.product.domain.contracts.ProductRepository
-import yadwy.app.yadwyservice.product.domain.models.Money
 import yadwy.app.yadwyservice.product.domain.models.Product
 import yadwy.app.yadwyservice.product.domain.models.ProductId
 import yadwy.app.yadwyservice.product.infrastructure.database.dao.ProductDao
 import yadwy.app.yadwyservice.product.infrastructure.database.dbo.ProductDbo
+import yadwy.app.yadwyservice.sharedkernel.domain.models.Amount
 
 @Component
 class ProductRepositoryImpl(
@@ -65,8 +65,8 @@ class ProductRepositoryImpl(
         name = name,
         description = description,
         images = images.toList(),
-        price = Money.of(price),
-        compareAtPrice = compareAtPrice?.let { Money.of(it) },
+        price = Amount.of(price),
+        compareAtPrice = compareAtPrice?.let { Amount.of(it) },
         categoryId = categoryId,
         stock = stock,
         trackInventory = trackInventory,

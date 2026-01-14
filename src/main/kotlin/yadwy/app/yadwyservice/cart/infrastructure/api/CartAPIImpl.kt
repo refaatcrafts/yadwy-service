@@ -20,7 +20,7 @@ class CartAPIImpl(
                 CartItemDto(
                     id = item.getId().id,
                     productId = item.getProductId(),
-                    quantity = item.getQuantity(),
+                    quantity = item.getQuantity().value,
                     unitPrice = item.getUnitPrice(),
                     subtotal = item.getSubtotal()
                 )

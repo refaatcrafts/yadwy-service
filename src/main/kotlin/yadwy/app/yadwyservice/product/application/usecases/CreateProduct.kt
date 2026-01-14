@@ -6,9 +6,9 @@ import yadwy.app.yadwyservice.product.application.models.ProductResponse
 import yadwy.app.yadwyservice.product.domain.contracts.CategoryGateway
 import yadwy.app.yadwyservice.product.domain.contracts.ProductRepository
 import yadwy.app.yadwyservice.product.domain.contracts.SellerGateway
-import yadwy.app.yadwyservice.product.domain.models.Money
 import yadwy.app.yadwyservice.product.domain.models.Product
 import yadwy.app.yadwyservice.sharedkernel.application.UseCase
+import yadwy.app.yadwyservice.sharedkernel.domain.models.Amount
 
 @Component
 class CreateProduct(
@@ -23,8 +23,8 @@ class CreateProduct(
             name = request.name,
             description = request.description,
             images = request.images,
-            price = Money.of(request.price),
-            compareAtPrice = request.compareAtPrice?.let { Money.of(it) },
+            price = Amount.of(request.price),
+            compareAtPrice = request.compareAtPrice?.let { Amount.of(it) },
             categoryId = request.categoryId,
             stock = request.stock,
             trackInventory = request.trackInventory,

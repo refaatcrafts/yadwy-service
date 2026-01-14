@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component
 import yadwy.app.yadwyservice.cart.application.models.CartResponse
 import yadwy.app.yadwyservice.cart.domain.contracts.CartRepository
 import yadwy.app.yadwyservice.sharedkernel.application.UseCase
-import java.math.BigDecimal
+import yadwy.app.yadwyservice.sharedkernel.domain.models.Amount
 
 @Component
 class GetCart(
@@ -17,7 +17,7 @@ class GetCart(
             id = 0,
             accountId = request,
             items = emptyList(),
-            total = BigDecimal.ZERO
+            total = Amount.ZERO
         )
     }
 }

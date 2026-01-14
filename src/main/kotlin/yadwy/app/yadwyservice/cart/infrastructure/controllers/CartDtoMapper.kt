@@ -9,13 +9,13 @@ fun CartResponse.toDto() = CartResponseDto(
     id = id,
     accountId = accountId,
     items = items.map { it.toDto() },
-    total = total.toDouble()
+    total = total.value.toDouble()
 )
 
 fun CartItemResponse.toDto() = CartItemResponseDto(
     id = id,
     productId = productId,
     quantity = quantity,
-    unitPrice = unitPrice.toDouble(),
-    subtotal = subtotal.toDouble()
+    unitPrice = unitPrice.value.toDouble(),
+    subtotal = subtotal.value.toDouble()
 )

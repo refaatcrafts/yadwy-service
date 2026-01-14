@@ -1,6 +1,5 @@
 package yadwy.app.yadwyservice.cart.infrastructure.repositories
 
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Component
 import yadwy.app.yadwyservice.cart.domain.contracts.CartRepository
 import yadwy.app.yadwyservice.cart.domain.models.Cart
@@ -11,6 +10,8 @@ import yadwy.app.yadwyservice.cart.infrastructure.database.dao.CartDao
 import yadwy.app.yadwyservice.cart.infrastructure.database.dao.CartItemDao
 import yadwy.app.yadwyservice.cart.infrastructure.database.dbo.CartDbo
 import yadwy.app.yadwyservice.cart.infrastructure.database.dbo.CartItemDbo
+import yadwy.app.yadwyservice.sharedkernel.domain.models.Amount
+import yadwy.app.yadwyservice.sharedkernel.domain.models.Quantity
 
 @Component
 class CartRepositoryImpl(
@@ -34,8 +35,8 @@ class CartRepositoryImpl(
                 id = null,
                 cartId = cartId,
                 productId = item.getProductId(),
-                quantity = item.getQuantity(),
-                unitPrice = item.getUnitPrice()
+                quantity = item.getQuantity().value,
+                unitPrice = item.getUnitPrice().value
             )
             cartItemDao.save(itemDbo)
         }
@@ -74,7 +75,7 @@ class CartRepositoryImpl(
     private fun CartItemDbo.toDomain(): CartItem = CartItem.reconstitute(
         cartItemId = CartItemId(id!!),
         productId = productId,
-        quantity = quantity,
-        unitPrice = unitPrice
+        quantity = Quantity.of(quantity),
+        unitPrice = Amount.of(unitPrice)
     )
 }

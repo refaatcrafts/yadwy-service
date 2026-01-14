@@ -2,8 +2,9 @@ package yadwy.app.yadwyservice.cart.domain.models
 
 import yadwy.app.yadwyservice.cart.domain.events.*
 import yadwy.app.yadwyservice.cart.domain.exceptions.CartItemNotFoundException
+import yadwy.app.yadwyservice.sharedkernel.domain.models.Amount
+import yadwy.app.yadwyservice.sharedkernel.domain.models.Quantity
 import yadwy.app.yadwyservice.sharedkernel.domain.models.base.AggregateRoot
-import java.math.BigDecimal
 
 class Cart internal constructor(
     private val cartId: CartId,
@@ -29,10 +30,7 @@ class Cart internal constructor(
         ): Cart = Cart(cartId, accountId, items)
     }
 
-    fun addItem(productId: Long, quantity: Int, unitPrice: BigDecimal) {
-        require(quantity >= 1) { "Quantity must be at least 1" }
-        require(unitPrice >= BigDecimal.ZERO) { "Unit price cannot be negative" }
-
+    fun addItem(productId: Long, quantity: Quantity, unitPrice: Amount) {
         val existingItem = items.find { it.getProductId() == productId }
         if (existingItem != null) {
             existingItem.increaseQuantity(quantity)
@@ -49,8 +47,8 @@ class Cart internal constructor(
         raiseEvent(ItemRemovedFromCartEvent(cartId, productId))
     }
 
-    fun updateItemQuantity(productId: Long, quantity: Int) {
-        if (quantity == 0) {
+    fun updateItemQuantity(productId: Long, quantity: Quantity) {
+        if (quantity == Quantity.ZERO) {
             removeItem(productId)
             return
         }
@@ -66,8 +64,8 @@ class Cart internal constructor(
         raiseEvent(CartClearedEvent(cartId))
     }
 
-    fun calculateTotal(): BigDecimal {
-        return items.fold(BigDecimal.ZERO) { acc, item -> acc.add(item.getSubtotal()) }
+    fun calculateTotal(): Amount {
+        return items.fold(Amount.ZERO) { acc, item -> acc + item.getSubtotal() }
     }
 
     fun getId() = cartId
