@@ -1,0 +1,22 @@
+### Add product to the cart
+POST {{baseUrl}}/api/v1/cart/items
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "productId": 1,
+  "quantity": 2
+}
+
+
+
+### Get the cart
+GET {{baseUrl}}/api/v1/cart
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+
+### Clear the cart
+DELETE {{baseUrl}}/api/v1/cart
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}

@@ -45,6 +45,16 @@ tags:
     description: List products endpoint
   - name: UpdateProductVisibility
     description: Update product visibility endpoint
+  - name: AddItemToCart
+    description: Add item to cart endpoint
+  - name: UpdateCartItemQuantity
+    description: Update cart item quantity endpoint
+  - name: RemoveItemFromCart
+    description: Remove item from cart endpoint
+  - name: GetCart
+    description: Get cart endpoint
+  - name: ClearCart
+    description: Clear cart endpoint
 
 paths:
   /api/v1/auth/register/customer:
@@ -537,6 +547,131 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiError'
 
+  /api/v1/cart:
+    get:
+      operationId: getCart
+      tags:
+        - GetCart
+      summary: Get shopping cart
+      description: Returns the current user's shopping cart with all items and total
+      responses:
+        '200':
+          description: Cart retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartResponseDto'
+    delete:
+      operationId: clearCart
+      tags:
+        - ClearCart
+      summary: Clear shopping cart
+      description: Removes all items from the current user's cart
+      responses:
+        '204':
+          description: Cart cleared successfully
+
+  /api/v1/cart/items:
+    post:
+      operationId: addItemToCart
+      tags:
+        - AddItemToCart
+      summary: Add item to cart
+      description: Adds a product to the shopping cart or increases quantity if already present
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddItemToCartRequestDto'
+      responses:
+        '200':
+          description: Item added to cart
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartResponseDto'
+        '400':
+          description: Invalid request (insufficient stock, invalid quantity)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /api/v1/cart/items/{productId}:
+    put:
+      operationId: updateCartItemQuantity
+      tags:
+        - UpdateCartItemQuantity
+      summary: Update cart item quantity
+      description: Updates the quantity of a product in the cart (set to 0 to remove)
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Product ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCartItemQuantityRequestDto'
+      responses:
+        '200':
+          description: Item quantity updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartResponseDto'
+        '400':
+          description: Invalid request (insufficient stock)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Cart or item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    delete:
+      operationId: removeItemFromCart
+      tags:
+        - RemoveItemFromCart
+      summary: Remove item from cart
+      description: Removes a product from the shopping cart
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Product ID
+      responses:
+        '200':
+          description: Item removed from cart
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartResponseDto'
+        '404':
+          description: Cart or item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
 components:
   schemas:
     LocalizedDto:
@@ -931,3 +1066,94 @@ components:
         visible:
           type: boolean
           description: Whether product is visible in marketplace
+
+    AddItemToCartRequestDto:
+      type: object
+      required:
+        - productId
+        - quantity
+      properties:
+        productId:
+          type: integer
+          format: int64
+          description: Product ID to add
+          example: 1
+        quantity:
+          type: integer
+          minimum: 1
+          description: Quantity to add
+          example: 2
+
+    UpdateCartItemQuantityRequestDto:
+      type: object
+      required:
+        - quantity
+      properties:
+        quantity:
+          type: integer
+          minimum: 0
+          description: New quantity (0 to remove item)
+          example: 3
+
+    CartResponseDto:
+      type: object
+      required:
+        - id
+        - accountId
+        - items
+        - total
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Cart ID
+          example: 1
+        accountId:
+          type: integer
+          format: int64
+          description: Account ID of cart owner
+          example: 123
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartItemResponseDto'
+          description: Items in the cart
+        total:
+          type: number
+          format: double
+          description: Total price of all items
+          example: 199.98
+
+    CartItemResponseDto:
+      type: object
+      required:
+        - id
+        - productId
+        - quantity
+        - unitPrice
+        - subtotal
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Cart item ID
+          example: 1
+        productId:
+          type: integer
+          format: int64
+          description: Product ID
+          example: 1
+        quantity:
+          type: integer
+          description: Quantity in cart
+          example: 2
+        unitPrice:
+          type: number
+          format: double
+          description: Price per unit (snapshot at time of adding)
+          example: 99.99
+        subtotal:
+          type: number
+          format: double
+          description: Subtotal (quantity * unitPrice)
+          example: 199.98

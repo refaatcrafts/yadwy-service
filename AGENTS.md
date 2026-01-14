@@ -114,7 +114,40 @@ Current modules:
 - `seller/` - Seller profiles and store management
 - `product/` - Product catalog management
 - `category/` - Product categories
-- `sharedkernel/` - Base types (Entity, AggregateRoot, ValueObject, UseCase)
+- `cart/` - Shopping cart management
+- `sharedkernel/` - Base types (Entity, AggregateRoot, ValueObject, UseCase, Amount, Quantity)
+
+## Shared Value Objects (Use These!)
+
+**Always use `Amount` for monetary values - never raw `BigDecimal`:**
+
+```kotlin
+// ✅ Correct - use Amount from sharedkernel
+import yadwy.app.yadwyservice.sharedkernel.domain.models.Amount
+
+val price: Amount = Amount.of(99.99)
+val total: Amount = price * quantity  // Supports arithmetic operations
+val discounted: Amount = price - discount
+
+// ❌ Wrong - don't use raw BigDecimal for money
+val price: BigDecimal = BigDecimal("99.99")
+```
+
+**Always use `Quantity` for item counts - never raw `Int`:**
+
+```kotlin
+// ✅ Correct - use Quantity from sharedkernel
+import yadwy.app.yadwyservice.sharedkernel.domain.models.Quantity
+
+val qty: Quantity = Quantity.of(5)
+val newQty: Quantity = qty + 3  // Supports arithmetic
+val total: Amount = unitPrice * qty  // Works with Amount
+
+// ❌ Wrong - don't use raw Int for quantities in domain
+val quantity: Int = 5
+```
+
+Why: These value objects enforce validation (no negative amounts/quantities), provide type safety, and support domain-specific operations. Located in `sharedkernel/domain/models/`.
 
 See `docs/ModuleInterCommunication.md` for the Gateway pattern.
 

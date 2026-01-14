@@ -5,6 +5,7 @@ import yadwy.app.yadwyservice.product.domain.exceptions.CategoryNotFoundExceptio
 import yadwy.app.yadwyservice.product.domain.exceptions.InsufficientStockException
 import yadwy.app.yadwyservice.product.domain.exceptions.InvalidCompareAtPriceException
 import yadwy.app.yadwyservice.product.domain.exceptions.SellerNotFoundException
+import yadwy.app.yadwyservice.sharedkernel.domain.models.Amount
 import yadwy.app.yadwyservice.sharedkernel.domain.models.Localized
 import yadwy.app.yadwyservice.sharedkernel.domain.models.base.AggregateRoot
 
@@ -14,8 +15,8 @@ class Product internal constructor(
     private var name: Localized,
     private var description: Localized?,
     private var images: List<String>,
-    private var price: Money,
-    private var compareAtPrice: Money?,
+    private var price: Amount,
+    private var compareAtPrice: Amount?,
     private val categoryId: Long,
     private var stock: Int,
     private var trackInventory: Boolean,
@@ -28,8 +29,8 @@ class Product internal constructor(
             name: Localized,
             description: Localized?,
             images: List<String>,
-            price: Money,
-            compareAtPrice: Money?,
+            price: Amount,
+            compareAtPrice: Amount?,
             categoryId: Long,
             stock: Int,
             trackInventory: Boolean,
@@ -80,8 +81,8 @@ class Product internal constructor(
             name: Localized,
             description: Localized?,
             images: List<String>,
-            price: Money,
-            compareAtPrice: Money?,
+            price: Amount,
+            compareAtPrice: Amount?,
             categoryId: Long,
             stock: Int,
             trackInventory: Boolean,
@@ -113,8 +114,8 @@ class Product internal constructor(
     }
 
     fun updatePricing(
-        price: Money? = null,
-        compareAtPrice: Money? = null
+        price: Amount? = null,
+        compareAtPrice: Amount? = null
     ) {
         val newPrice = price ?: this.price
         val newCompareAtPrice = compareAtPrice ?: this.compareAtPrice
