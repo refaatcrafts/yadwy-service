@@ -13,8 +13,6 @@ servers:
     description: Local development
 
 tags:
-  - name: Hello
-    description: Health check and greeting endpoints
   - name: Login
     description: User login endpoint
   - name: Token
