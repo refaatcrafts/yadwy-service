@@ -1,0 +1,28 @@
+### Place Order (Customer)
+### Creates a new order from the current user's cart
+### Items are automatically grouped by seller into separate seller orders
+POST {{baseUrl}}/api/v1/orders
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+
+### List Customer Orders
+### Returns all orders for the authenticated customer
+GET {{baseUrl}}/api/v1/orders
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+
+### Get Order by ID
+### Returns a single order by its ID
+GET {{baseUrl}}/api/v1/orders/1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+
+### List Seller Orders
+### Returns all orders containing products from the authenticated seller
+### Note: Must be logged in as a seller
+GET {{baseUrl}}/api/v1/sellers/orders
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
