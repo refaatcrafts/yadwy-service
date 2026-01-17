@@ -4,6 +4,7 @@ import app.yadwy.model.LocalizedDto
 import app.yadwy.model.OrderLineResponseDto
 import app.yadwy.model.OrderResponseDto
 import app.yadwy.model.SellerOrderResponseDto
+import app.yadwy.model.ShippingAddressDto
 import yadwy.app.yadwyservice.order.application.models.OrderLineResponse
 import yadwy.app.yadwyservice.order.application.models.OrderResponse
 import yadwy.app.yadwyservice.order.application.models.SellerOrderResponse
@@ -15,6 +16,15 @@ fun OrderResponse.toDto() = OrderResponseDto(
     accountId = accountId,
     status = OrderResponseDto.Status.forValue(status),
     sellerOrders = sellerOrders.map { it.toDto() },
+    shippingAddress = ShippingAddressDto(
+        recipientName = shippingAddress.recipientName,
+        street = shippingAddress.street,
+        city = shippingAddress.city,
+        governorate = shippingAddress.governorate,
+        phone = shippingAddress.phone,
+        notes = shippingAddress.notes
+    ),
+    paymentMethod = OrderResponseDto.PaymentMethod.forValue(paymentMethod.name),
     total = total.value.toDouble(),
     createdAt = LocalDateTime.ofInstant(createdAt, ZoneOffset.UTC)
 )

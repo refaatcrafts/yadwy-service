@@ -19,7 +19,6 @@ class OrderRepositoryImpl(
     override fun save(order: Order): Order {
         val orderDbo = order.toDbo()
         val savedOrder = orderDao.save(orderDbo)
-
         return savedOrder.toDomain()
     }
 
@@ -43,6 +42,13 @@ class OrderRepositoryImpl(
         id = if (getId().value == 0L) null else getId().value,
         accountId = getAccountId(),
         status = getStatus().name,
+        recipientName = getShippingAddress().recipientName,
+        street = getShippingAddress().street,
+        city = getShippingAddress().city,
+        governorate = getShippingAddress().governorate,
+        phone = getShippingAddress().phone,
+        notes = getShippingAddress().notes,
+        paymentMethod = getPaymentMethod().name,
         createdAt = getCreatedAt(),
         updatedAt = getUpdatedAt(),
         sellerOrders = getSellerOrders().map { it.toDbo() }.toSet()
@@ -70,11 +76,19 @@ class OrderRepositoryImpl(
         )
     }
 
-    // DBO to Domain mapping
     private fun OrderDbo.toDomain() = Order.reconstitute(
         orderId = OrderId(id!!),
         accountId = accountId,
         sellerOrders = sellerOrders.map { it.toDomain() },
+        shippingAddress = ShippingAddress(
+            recipientName = recipientName,
+            street = street,
+            city = city,
+            governorate = governorate,
+            phone = phone,
+            notes = notes
+        ),
+        paymentMethod = PaymentMethod.valueOf(paymentMethod),
         status = OrderStatus.valueOf(status),
         createdAt = createdAt,
         updatedAt = updatedAt

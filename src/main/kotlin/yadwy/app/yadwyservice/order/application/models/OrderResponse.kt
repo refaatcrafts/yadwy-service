@@ -1,5 +1,7 @@
 package yadwy.app.yadwyservice.order.application.models
 
+import yadwy.app.yadwyservice.order.domain.models.PaymentMethod
+import yadwy.app.yadwyservice.order.domain.models.ShippingAddress
 import yadwy.app.yadwyservice.sharedkernel.domain.models.Amount
 import yadwy.app.yadwyservice.sharedkernel.domain.models.Localized
 import java.time.Instant
@@ -11,6 +13,8 @@ data class OrderResponse(
     val id: Long,
     val accountId: Long,
     val sellerOrders: List<SellerOrderResponse>,
+    val shippingAddress: ShippingAddress,
+    val paymentMethod: PaymentMethod,
     val status: String,
     val total: Amount,
     val createdAt: Instant,

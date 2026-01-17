@@ -11,6 +11,8 @@ class Order internal constructor(
     private val orderId: OrderId,
     private val accountId: Long,
     private val sellerOrders: List<SellerOrder>,
+    private val shippingAddress: ShippingAddress,
+    private val paymentMethod: PaymentMethod,
     private var status: OrderStatus,
     private val createdAt: Instant,
     private var updatedAt: Instant
@@ -21,16 +23,16 @@ class Order internal constructor(
     }
 
     companion object {
-        fun create(accountId: Long, cartItems: List<CartItem>): Order {
-            require(cartItems.isNotEmpty()) { "Cart cannot be empty" }
+        fun create(
+            accountId: Long,
+            linesBySeller: Map<Long, List<OrderLine>>,
+            shippingAddress: ShippingAddress,
+            paymentMethod: PaymentMethod
+        ): Order {
+            require(linesBySeller.isNotEmpty()) { "Order must have lines" }
+            require(linesBySeller.all { it.value.isNotEmpty() }) { "Each seller must have at least one item" }
 
-            val orderLinesBySeller = cartItems
-                .groupBy { it.sellerId }
-                .mapValues { (_, items) ->
-                    items.map { it.toOrderLine() }
-                }
-
-            val sellerOrders = orderLinesBySeller.map { (sellerId, orderLines) ->
+            val sellerOrders = linesBySeller.map { (sellerId, orderLines) ->
                 SellerOrder.create(sellerId, orderLines)
             }
 
@@ -39,6 +41,8 @@ class Order internal constructor(
                 orderId = OrderId(0),
                 accountId = accountId,
                 sellerOrders = sellerOrders,
+                shippingAddress = shippingAddress,
+                paymentMethod = paymentMethod,
                 status = OrderStatus.RECEIVED,
                 createdAt = now,
                 updatedAt = now
@@ -49,7 +53,7 @@ class Order internal constructor(
                 OrderReceivedEvent(
                     orderId = order.orderId,
                     accountId = accountId,
-                    sellerIds = orderLinesBySeller.keys.toList(),
+                    sellerIds = linesBySeller.keys.toList(),
                     total = order.calculateTotal()
                 )
             )
@@ -73,10 +77,21 @@ class Order internal constructor(
             orderId: OrderId,
             accountId: Long,
             sellerOrders: List<SellerOrder>,
+            shippingAddress: ShippingAddress,
+            paymentMethod: PaymentMethod,
             status: OrderStatus,
             createdAt: Instant,
             updatedAt: Instant
-        ): Order = Order(orderId, accountId, sellerOrders, status, createdAt, updatedAt)
+        ): Order = Order(
+            orderId,
+            accountId,
+            sellerOrders,
+            shippingAddress,
+            paymentMethod,
+            status,
+            createdAt,
+            updatedAt
+        )
     }
 
     fun getAllOrderLines(): List<OrderLine> = sellerOrders.flatMap { it.getOrderLines() }
@@ -96,6 +111,8 @@ class Order internal constructor(
     fun getId() = orderId
     fun getAccountId() = accountId
     fun getSellerOrders(): List<SellerOrder> = sellerOrders
+    fun getShippingAddress() = shippingAddress
+    fun getPaymentMethod() = paymentMethod
     fun getStatus() = status
     fun getCreatedAt() = createdAt
     fun getUpdatedAt() = updatedAt

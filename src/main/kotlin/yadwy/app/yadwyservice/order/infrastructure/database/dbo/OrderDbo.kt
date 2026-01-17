@@ -11,6 +11,13 @@ data class OrderDbo(
     val id: Long? = null,
     val accountId: Long,
     val status: String,
+    val recipientName: String,
+    val street: String,
+    val city: String,
+    val governorate: String,
+    val phone: String,
+    val notes: String?,
+    val paymentMethod: String,
     val createdAt: Instant,
     val updatedAt: Instant,
     @MappedCollection(idColumn = "order_id")

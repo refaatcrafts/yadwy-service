@@ -6,8 +6,8 @@ class OrderNotFoundException(orderId: Long) :
 class SellerOrderNotFoundException(orderId: Long, sellerId: Long) :
     RuntimeException("Seller order not found for order $orderId and seller $sellerId")
 
-class EmptyCartException(accountId: Long) :
-    RuntimeException("Cart is empty for account: $accountId")
+class EmptyOrderException :
+    RuntimeException("Order must have at least one item")
 
 class ProductNotFoundException(productId: Long) :
     RuntimeException("Product not found: $productId")

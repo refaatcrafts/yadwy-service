@@ -2,11 +2,18 @@ CREATE SCHEMA IF NOT EXISTS "order";
 
 CREATE TABLE "order".orders
 (
-    id         BIGSERIAL PRIMARY KEY,
-    account_id BIGINT                   NOT NULL,
-    status     VARCHAR(20)              NOT NULL DEFAULT 'RECEIVED',
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+    id             BIGSERIAL PRIMARY KEY,
+    account_id     BIGINT                   NOT NULL,
+    status         VARCHAR(20)              NOT NULL DEFAULT 'RECEIVED',
+    recipient_name VARCHAR(100)             NOT NULL,
+    street         VARCHAR(255)             NOT NULL,
+    city           VARCHAR(100)             NOT NULL,
+    governorate    VARCHAR(100)             NOT NULL,
+    phone          VARCHAR(20)              NOT NULL,
+    notes          TEXT,
+    payment_method VARCHAR(20)              NOT NULL DEFAULT 'COD',
+    created_at     TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at     TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX idx_orders_account_id ON "order".orders (account_id);

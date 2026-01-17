@@ -1,9 +1,55 @@
-### Place Order (Customer)
-### Creates a new order from the current user's cart
+### Place Order from Cart (Customer)
+### Creates a new order from cart items
 ### Items are automatically grouped by seller into separate seller orders
 POST {{baseUrl}}/api/v1/orders
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
+
+{
+  "source": "CART",
+  "items": [
+    {
+      "productId": 1,
+      "sellerId": 1,
+      "quantity": 1
+    }
+  ],
+  "shippingAddress": {
+    "recipientName": "Ahmed Mohamed",
+    "street": "15 El-Tahrir Street, Apt 4B",
+    "city": "Dokki",
+    "governorate": "Giza",
+    "phone": "01012345678",
+    "notes": "Please call before delivery"
+  },
+  "paymentMethod": "COD"
+}
+
+
+### Place Order Direct (Buy Now)
+### Creates a new order directly without using cart
+POST {{baseUrl}}/api/v1/orders
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "source": "DIRECT",
+  "items": [
+    {
+      "productId": 1,
+      "sellerId": 1,
+      "quantity": 1
+    }
+  ],
+  "shippingAddress": {
+    "recipientName": "Fatima Ali",
+    "street": "25 Nile Street",
+    "city": "Maadi",
+    "governorate": "Cairo",
+    "phone": "01098765432"
+  },
+  "paymentMethod": "COD"
+}
 
 
 ### List Customer Orders

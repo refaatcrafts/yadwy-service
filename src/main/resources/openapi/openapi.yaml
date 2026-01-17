@@ -684,7 +684,13 @@ paths:
       tags:
         - PlaceOrder
       summary: Place a new order
-      description: Creates a new order from the current user's cart. Items are grouped by seller into separate seller orders.
+      description: Creates a new order from provided items. Items are grouped by seller into separate seller orders. Can be used for checkout from cart or direct purchase (Buy Now).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlaceOrderRequestDto'
       responses:
         '201':
           description: Order placed successfully
@@ -693,7 +699,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/OrderResponseDto'
         '400':
-          description: Invalid request (empty cart, insufficient stock)
+          description: Invalid request (empty order, insufficient stock)
           content:
             application/json:
               schema:
@@ -1282,6 +1288,13 @@ components:
           items:
             $ref: '#/components/schemas/SellerOrderResponseDto'
           description: Orders grouped by seller
+        shippingAddress:
+          $ref: '#/components/schemas/ShippingAddressDto'
+        paymentMethod:
+          type: string
+          enum: [COD]
+          description: Payment method
+          example: COD
         total:
           type: number
           format: double
@@ -1358,3 +1371,92 @@ components:
           format: double
           description: Line subtotal (quantity * unitPrice)
           example: 149.97
+
+    PlaceOrderRequestDto:
+      type: object
+      required:
+        - source
+        - items
+        - shippingAddress
+        - paymentMethod
+      properties:
+        source:
+          type: string
+          enum: [CART, DIRECT]
+          description: Order source (CART for checkout, DIRECT for Buy Now)
+          example: CART
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItemRequestDto'
+          minItems: 1
+          description: Items to order
+        shippingAddress:
+          $ref: '#/components/schemas/ShippingAddressDto'
+        paymentMethod:
+          type: string
+          enum: [COD]
+          description: Payment method
+          example: COD
+
+    OrderItemRequestDto:
+      type: object
+      required:
+        - productId
+        - sellerId
+        - quantity
+      properties:
+        productId:
+          type: integer
+          format: int64
+          description: Product ID
+          example: 1
+        sellerId:
+          type: integer
+          format: int64
+          description: Seller ID
+          example: 456
+        quantity:
+          type: integer
+          minimum: 1
+          description: Quantity to order
+          example: 2
+
+    ShippingAddressDto:
+      type: object
+      required:
+        - recipientName
+        - street
+        - city
+        - governorate
+        - phone
+      properties:
+        recipientName:
+          type: string
+          maxLength: 100
+          description: Recipient name
+          example: "Ahmed Mohamed"
+        street:
+          type: string
+          maxLength: 255
+          description: Street address
+          example: "15 El-Tahrir Street, Apt 4B"
+        city:
+          type: string
+          maxLength: 100
+          description: City
+          example: "Dokki"
+        governorate:
+          type: string
+          maxLength: 100
+          description: Governorate
+          example: "Giza"
+        phone:
+          type: string
+          maxLength: 20
+          description: Phone number
+          example: "01012345678"
+        notes:
+          type: string
+          description: Delivery notes
+          example: "Please call before delivery"

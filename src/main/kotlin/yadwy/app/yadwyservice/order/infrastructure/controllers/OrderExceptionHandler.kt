@@ -5,7 +5,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
-import yadwy.app.yadwyservice.order.domain.exceptions.EmptyCartException
+import yadwy.app.yadwyservice.order.domain.exceptions.EmptyOrderException
 import yadwy.app.yadwyservice.order.domain.exceptions.InsufficientStockException
 import yadwy.app.yadwyservice.order.domain.exceptions.OrderNotFoundException
 import yadwy.app.yadwyservice.order.domain.exceptions.ProductNotFoundException
@@ -20,11 +20,11 @@ class OrderExceptionHandler {
             .body(ApiError("ORDER_NOT_FOUND", ex.message ?: "Order not found"))
     }
 
-    @ExceptionHandler(EmptyCartException::class)
-    fun handleEmptyCart(ex: EmptyCartException): ResponseEntity<ApiError> {
+    @ExceptionHandler(EmptyOrderException::class)
+    fun handleEmptyOrder(ex: EmptyOrderException): ResponseEntity<ApiError> {
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
-            .body(ApiError("EMPTY_CART", ex.message ?: "Cart is empty"))
+            .body(ApiError("EMPTY_ORDER", ex.message ?: "Order must have at least one item"))
     }
 
     @ExceptionHandler(ProductNotFoundException::class)
