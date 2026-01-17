@@ -22,7 +22,6 @@ class PlaceOrder(
 ) : UseCase<PlaceOrderRequest, OrderResponse>() {
 
     override fun execute(request: PlaceOrderRequest): OrderResponse {
-        // Build order lines grouped by seller, validating products and stock
         val linesBySeller = mutableMapOf<Long, MutableList<OrderLine>>()
 
         for (item in request.items) {
@@ -45,10 +44,6 @@ class PlaceOrder(
             )
 
             linesBySeller.getOrPut(product.sellerId) { mutableListOf() }.add(orderLine)
-        }
-
-        for (item in request.items) {
-            productGateway.decrementStock(item.productId, item.quantity)
         }
 
         val order = Order.create(
