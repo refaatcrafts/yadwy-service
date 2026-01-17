@@ -17,10 +17,9 @@ fun OrderResponse.toDto() = OrderResponseDto(
     status = OrderResponseDto.Status.forValue(status),
     sellerOrders = sellerOrders.map { it.toDto() },
     shippingAddress = ShippingAddressDto(
-        recipientName = shippingAddress.recipientName,
-        street = shippingAddress.street,
-        city = shippingAddress.city,
-        governorate = shippingAddress.governorate,
+        customerName = shippingAddress.customerName,
+        address = shippingAddress.address,
+        province = shippingAddress.province,
         phone = shippingAddress.phone,
         notes = shippingAddress.notes
     ),

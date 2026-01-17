@@ -34,10 +34,9 @@ class PlaceOrderController(
                 )
             },
             shippingAddress = ShippingAddress(
-                recipientName = placeOrderRequestDto.shippingAddress.recipientName,
-                street = placeOrderRequestDto.shippingAddress.street,
-                city = placeOrderRequestDto.shippingAddress.city,
-                governorate = placeOrderRequestDto.shippingAddress.governorate,
+                customerName = placeOrderRequestDto.shippingAddress.customerName,
+                address = placeOrderRequestDto.shippingAddress.address,
+                province = placeOrderRequestDto.shippingAddress.province,
                 phone = placeOrderRequestDto.shippingAddress.phone,
                 notes = placeOrderRequestDto.shippingAddress.notes
             ),
