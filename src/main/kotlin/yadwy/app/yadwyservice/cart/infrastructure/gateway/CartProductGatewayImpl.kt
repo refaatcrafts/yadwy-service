@@ -6,7 +6,7 @@ import yadwy.app.yadwyservice.product.api.ProductAPI
 import yadwy.app.yadwyservice.sharedkernel.domain.models.Amount
 
 @Service
-class ProductGatewayImpl(
+class CartProductGatewayImpl(
     private val productAPI: ProductAPI
 ) : ProductGateway {
 

@@ -1,29 +1,29 @@
 package yadwy.app.yadwyservice.seller.application.usecases
 
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import yadwy.app.yadwyservice.seller.domain.contracts.SellerRepository
 import yadwy.app.yadwyservice.seller.domain.models.Seller
-import yadwy.app.yadwyservice.seller.infrastructure.consumers.SellerAccountCreatedDto
-import yadwy.app.yadwyservice.sharedkernel.application.EventHandler
 
 @Component
 class HandleAccountCreated(
     private val sellerRepository: SellerRepository
-) : EventHandler<SellerAccountCreatedDto, Unit>() {
+) {
+    private val logger = LoggerFactory.getLogger(HandleAccountCreated::class.java)
 
-    override fun handle(event: SellerAccountCreatedDto) {
-        val existingSeller = sellerRepository.findByAccountId(event.accountId)
+    fun handle(accountId: Long, name: String) {
+        val existingSeller = sellerRepository.findByAccountId(accountId)
         if (existingSeller != null) {
-            logger.warn("Seller already exists for accountId: {}", event.accountId)
+            logger.warn("Seller already exists for accountId: {}", accountId)
             return
         }
 
         val seller = Seller.create(
-            accountId = event.accountId,
-            storeName = "Store-${event.accountId}"
+            accountId = accountId,
+            storeName = "Store-$accountId"
         )
 
         sellerRepository.save(seller)
-        logger.info("Created seller for accountId: {}", event.accountId)
+        logger.info("Created seller for accountId: {}", accountId)
     }
 }

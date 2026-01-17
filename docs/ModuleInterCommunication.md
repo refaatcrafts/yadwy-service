@@ -192,8 +192,283 @@ product/
 | Scenario | Pattern | Example |
 |----------|---------|---------|
 | Need data from another module synchronously | Gateway + Public API | Product needs to check if seller exists |
-| React to something that happened in another module | Domain Events | Create seller profile when account is created |
+| React to something that happened in another module | Integration Events | Deduct inventory when order is placed |
 | Query complex data across modules | Dedicated Query Service | Dashboard aggregating data from multiple modules |
+
+---
+
+## Integration Events (Async Communication)
+
+For asynchronous reactions to events in other modules, we use **Integration Events**. These are different from domain events:
+
+- **Domain Events** - Internal to a module, contain domain types, never cross module boundaries
+- **Integration Events** - Public contracts for cross-module communication, contain only primitives
+
+### Why Not Use Domain Events Directly?
+
+Using domain events for inter-module communication violates DDD principles:
+1. Domain events contain domain types (value objects, entity IDs) that shouldn't be exposed
+2. Creates tight coupling between modules
+3. Changes to internal domain models would break consumers
+
+### Integration Event Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              Publisher Module                                │
+│  ┌─────────────┐    ┌──────────────┐    ┌─────────────────────────────────┐ │
+│  │   Domain    │───▶│  Repository  │───▶│  Event Mapper (api/)            │ │
+│  │  Aggregate  │    │    Impl      │    │  DomainEvent → IntegrationEvent │ │
+│  └─────────────┘    └──────────────┘    └─────────────────────────────────┘ │
+│        │                   │                           │                     │
+│        │ raises            │ saves                     │ maps                │
+│        ▼                   ▼                           ▼                     │
+│  DomainEvent          Database              IntegrationEventPublisher        │
+│  (internal)                                          │                       │
+│                                                      ▼                       │
+│                                          Spring ApplicationEventPublisher    │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                                       │
+                                    Spring Event Bus   │
+                                                       ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              Consumer Module                                 │
+│                     ┌────────────────────────────────┐                      │
+│                     │  Consumer (infrastructure/)    │                      │
+│                     │  @TransactionalEventListener   │                      │
+│                     └────────────────────────────────┘                      │
+│                                    │                                        │
+│                                    ▼                                        │
+│                     ┌────────────────────────────────┐                      │
+│                     │  EventHandler (application/)   │                      │
+│                     │  extends EventHandler<T, R>    │                      │
+│                     └────────────────────────────────┘                      │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Shared Kernel Components
+
+The `sharedkernel` provides the base infrastructure:
+
+```kotlin
+// sharedkernel/domain/models/base/IntegrationEvent.kt
+interface IntegrationEvent
+
+// sharedkernel/domain/contracts/IntegrationEventPublisher.kt
+interface IntegrationEventPublisher {
+    fun publish(event: IntegrationEvent)
+    fun publishAll(events: Collection<IntegrationEvent>)
+}
+
+// sharedkernel/infrastructure/publishers/SpringIntegrationEventPublisher.kt
+@Component
+class SpringIntegrationEventPublisher(
+    private val applicationEventPublisher: ApplicationEventPublisher
+) : IntegrationEventPublisher {
+    override fun publish(event: IntegrationEvent) {
+        applicationEventPublisher.publishEvent(event)
+    }
+    override fun publishAll(events: Collection<IntegrationEvent>) {
+        events.forEach { publish(it) }
+    }
+}
+```
+
+### Publisher Module Structure
+
+Integration events and their mappers live in the `api/` package:
+
+```
+identity/
+├── api/                                    # PUBLIC
+│   ├── IdentityIntegrationEvent.kt         # Sealed interface + event classes
+│   ├── AccountEventMapper.kt               # Domain → Integration mapping
+│   └── ModuleMetadata.kt
+│
+├── domain/
+│   └── events/
+│       └── IdentityEvent.kt                # INTERNAL domain events
+│
+└── infrastructure/
+    └── repositories/
+        └── AccountRepositoryImpl.kt        # Publishes integration events
+```
+
+### Defining Integration Events
+
+Group all integration events for a module in a single file with a sealed interface:
+
+```kotlin
+// identity/api/IdentityIntegrationEvent.kt
+package yadwy.app.yadwyservice.identity.api
+
+import yadwy.app.yadwyservice.sharedkernel.domain.models.base.IntegrationEvent
+
+sealed interface IdentityIntegrationEvent : IntegrationEvent
+
+data class SellerAccountCreatedIntegrationEvent(
+    val accountId: Long,
+    val name: String
+) : IdentityIntegrationEvent
+
+data class CustomerAccountCreatedIntegrationEvent(
+    val accountId: Long,
+    val name: String
+) : IdentityIntegrationEvent
+```
+
+**Rules for Integration Events:**
+- Use only primitive types (Long, String, Int, Boolean)
+- No domain types (Amount, Quantity, value objects)
+- Sealed interface enables exhaustive pattern matching
+- Named with `IntegrationEvent` suffix
+
+### Event Mapper
+
+Extension functions map domain events to integration events:
+
+```kotlin
+// identity/api/AccountEventMapper.kt
+package yadwy.app.yadwyservice.identity.api
+
+fun IdentityEvent.toIntegrationEvent(persistedAccountId: AccountId): IntegrationEvent? {
+    return when (this) {
+        is AccountCreatedEvent -> this.toIntegrationEvent(persistedAccountId)
+    }
+}
+
+private fun AccountCreatedEvent.toIntegrationEvent(persistedAccountId: AccountId): IntegrationEvent? {
+    return when {
+        roles.contains(Role.SELLER) -> SellerAccountCreatedIntegrationEvent(
+            accountId = persistedAccountId.id,
+            name = name
+        )
+        roles.contains(Role.CUSTOMER) -> CustomerAccountCreatedIntegrationEvent(
+            accountId = persistedAccountId.id,
+            name = name
+        )
+        else -> null
+    }
+}
+```
+
+### Publishing from Repository
+
+The repository publishes integration events after saving:
+
+```kotlin
+// identity/infrastructure/repositories/AccountRepositoryImpl.kt
+@Component
+class AccountRepositoryImpl(
+    private val accountDao: AccountDao,
+    private val integrationEventPublisher: IntegrationEventPublisher
+) : AccountRepository {
+
+    override fun save(account: Account): Account {
+        val savedAccount = accountDao.save(account.toDbo())
+        val persistedAccountId = AccountId(savedAccount.id!!)
+
+        // Map domain events to integration events and publish
+        val integrationEvents = account.occurredEvents()
+            .mapNotNull { it.toIntegrationEvent(persistedAccountId) }
+        integrationEventPublisher.publishAll(integrationEvents)
+
+        return savedAccount.toDomain()
+    }
+}
+```
+
+### Consumer Module Structure
+
+```
+product/
+├── application/
+│   └── usecases/
+│       └── HandleOrderPlaced.kt            # EventHandler
+│
+└── infrastructure/
+    └── consumers/
+        └── OrderPlacedConsumer.kt          # @TransactionalEventListener
+```
+
+### Event Consumer
+
+The consumer receives typed integration events:
+
+```kotlin
+// product/infrastructure/consumers/OrderPlacedConsumer.kt
+@Component
+class OrderPlacedConsumer(
+    private val handleOrderPlaced: HandleOrderPlaced
+) {
+    private val logger = LoggerFactory.getLogger(OrderPlacedConsumer::class.java)
+
+    @TransactionalEventListener
+    fun onOrderPlaced(event: OrderPlacedIntegrationEvent) {
+        logger.info("Processing OrderPlacedIntegrationEvent for orderId: {}", event.orderId)
+        handleOrderPlaced.handle(event)
+    }
+}
+```
+
+### Event Handler
+
+The handler extends `EventHandler<T, R>` from sharedkernel:
+
+```kotlin
+// product/application/usecases/HandleOrderPlaced.kt
+@Component
+class HandleOrderPlaced(
+    private val productRepository: ProductRepository
+) : EventHandler<OrderPlacedIntegrationEvent, Unit>() {
+
+    override fun handle(event: OrderPlacedIntegrationEvent) {
+        event.lineItems.forEach { lineItem ->
+            try {
+                val product = productRepository.findById(lineItem.productId)
+                if (product == null) {
+                    logger.warn("Product not found: {}", lineItem.productId)
+                    return@forEach
+                }
+                product.decrementStock(lineItem.quantity)
+                productRepository.save(product)
+            } catch (e: Exception) {
+                logger.error("Failed to deduct inventory for productId: {}", lineItem.productId)
+            }
+        }
+    }
+}
+```
+
+### Can Application Layer Depend on Integration Events?
+
+**Yes.** Integration events in `api/` are public contracts, similar to API interfaces and DTOs. They contain only primitives, so there's no coupling to another module's domain.
+
+The dependency direction is correct:
+```
+product/application → order/api (public contract) ✅
+product/application → order/domain (internal) ❌
+```
+
+### Integration Events vs Gateway Pattern
+
+| Aspect | Gateway Pattern | Integration Events |
+|--------|-----------------|-------------------|
+| Communication | Synchronous | Asynchronous |
+| Coupling | Request/Response | Fire and forget |
+| Use case | Query data | React to events |
+| Example | Check if seller exists | Deduct inventory on order |
+
+### Summary
+
+1. **Domain events stay internal** - Never expose domain events across modules
+2. **Integration events are public contracts** - Live in `api/` package
+3. **Use primitives only** - No domain types in integration events
+4. **Sealed interfaces** - Enable exhaustive pattern matching
+5. **Mapper in api/** - Maps domain events to integration events
+6. **Repository publishes** - After saving, map and publish integration events
+7. **Consumer in infrastructure/** - Receives typed events via `@TransactionalEventListener`
+8. **Handler in application/** - Extends `EventHandler<T, R>`, contains business logic
 
 ## Benefits
 

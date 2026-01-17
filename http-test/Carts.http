@@ -5,9 +5,8 @@ Authorization: Bearer {{accessToken}}
 
 {
   "productId": 1,
-  "quantity": 2
+  "quantity": 1
 }
-
 
 
 ### Get the cart

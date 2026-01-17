@@ -53,6 +53,14 @@ tags:
     description: Get cart endpoint
   - name: ClearCart
     description: Clear cart endpoint
+  - name: PlaceOrder
+    description: Place order endpoint
+  - name: GetOrder
+    description: Get order endpoint
+  - name: ListCustomerOrders
+    description: List customer orders endpoint
+  - name: ListSellerOrders
+    description: List seller orders endpoint
 
 paths:
   /api/v1/auth/register/customer:
@@ -670,6 +678,100 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiError'
 
+  /api/v1/orders:
+    post:
+      operationId: placeOrder
+      tags:
+        - PlaceOrder
+      summary: Place a new order
+      description: Creates a new order from provided items. Items are grouped by seller into separate seller orders. Can be used for checkout from cart or direct purchase (Buy Now).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlaceOrderRequestDto'
+      responses:
+        '201':
+          description: Order placed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResponseDto'
+        '400':
+          description: Invalid request (empty order, insufficient stock)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    get:
+      operationId: listCustomerOrders
+      tags:
+        - ListCustomerOrders
+      summary: List customer orders
+      description: Returns all orders for the authenticated customer
+      responses:
+        '200':
+          description: List of orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrderResponseDto'
+
+  /api/v1/orders/{orderId}:
+    get:
+      operationId: getOrder
+      tags:
+        - GetOrder
+      summary: Get order by ID
+      description: Returns a single order by its ID
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Order ID
+      responses:
+        '200':
+          description: Order details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResponseDto'
+        '404':
+          description: Order not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /api/v1/sellers/orders:
+    get:
+      operationId: listSellerOrders
+      tags:
+        - ListSellerOrders
+      summary: List seller orders
+      description: Returns all orders containing products from the authenticated seller
+      responses:
+        '200':
+          description: List of orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrderResponseDto'
+
 components:
   schemas:
     LocalizedDto:
@@ -1155,3 +1257,206 @@ components:
           format: double
           description: Subtotal (quantity * unitPrice)
           example: 199.98
+
+    OrderResponseDto:
+      type: object
+      required:
+        - id
+        - accountId
+        - status
+        - sellerOrders
+        - total
+        - createdAt
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Order ID
+          example: 1
+        accountId:
+          type: integer
+          format: int64
+          description: Customer account ID
+          example: 123
+        status:
+          type: string
+          enum: [RECEIVED, CONFIRMED, SHIPPED, DELIVERED, CANCELLED]
+          description: Overall order status
+          example: RECEIVED
+        sellerOrders:
+          type: array
+          items:
+            $ref: '#/components/schemas/SellerOrderResponseDto'
+          description: Orders grouped by seller
+        shippingAddress:
+          $ref: '#/components/schemas/ShippingAddressDto'
+        paymentMethod:
+          type: string
+          enum: [COD]
+          description: Payment method
+          example: COD
+        total:
+          type: number
+          format: double
+          description: Total order amount
+          example: 299.97
+        createdAt:
+          type: string
+          format: date-time
+          description: Order creation timestamp
+          example: "2026-01-16T10:30:00Z"
+
+    SellerOrderResponseDto:
+      type: object
+      required:
+        - id
+        - sellerId
+        - status
+        - lines
+        - subtotal
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Seller order ID
+          example: 1
+        sellerId:
+          type: integer
+          format: int64
+          description: Seller ID
+          example: 456
+        status:
+          type: string
+          enum: [RECEIVED, CONFIRMED, SHIPPED, DELIVERED, CANCELLED]
+          description: Seller order status
+          example: RECEIVED
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderLineResponseDto'
+          description: Order lines for this seller
+        subtotal:
+          type: number
+          format: double
+          description: Subtotal for this seller's items
+          example: 149.98
+
+    OrderLineResponseDto:
+      type: object
+      required:
+        - productId
+        - productName
+        - unitPrice
+        - quantity
+        - subtotal
+      properties:
+        productId:
+          type: integer
+          format: int64
+          description: Product ID
+          example: 1
+        productName:
+          $ref: '#/components/schemas/LocalizedDto'
+        unitPrice:
+          type: number
+          format: double
+          description: Price per unit at time of order
+          example: 49.99
+        quantity:
+          type: integer
+          description: Quantity ordered
+          example: 3
+        subtotal:
+          type: number
+          format: double
+          description: Line subtotal (quantity * unitPrice)
+          example: 149.97
+
+    PlaceOrderRequestDto:
+      type: object
+      required:
+        - source
+        - items
+        - shippingAddress
+        - paymentMethod
+      properties:
+        source:
+          type: string
+          enum: [CART, DIRECT]
+          description: Order source (CART for checkout, DIRECT for Buy Now)
+          example: CART
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItemRequestDto'
+          minItems: 1
+          description: Items to order
+        shippingAddress:
+          $ref: '#/components/schemas/ShippingAddressDto'
+        paymentMethod:
+          type: string
+          enum: [COD]
+          description: Payment method
+          example: COD
+
+    OrderItemRequestDto:
+      type: object
+      required:
+        - productId
+        - sellerId
+        - quantity
+      properties:
+        productId:
+          type: integer
+          format: int64
+          description: Product ID
+          example: 1
+        sellerId:
+          type: integer
+          format: int64
+          description: Seller ID
+          example: 456
+        quantity:
+          type: integer
+          minimum: 1
+          description: Quantity to order
+          example: 2
+
+    ShippingAddressDto:
+      type: object
+      required:
+        - recipientName
+        - street
+        - city
+        - governorate
+        - phone
+      properties:
+        recipientName:
+          type: string
+          maxLength: 100
+          description: Recipient name
+          example: "Ahmed Mohamed"
+        street:
+          type: string
+          maxLength: 255
+          description: Street address
+          example: "15 El-Tahrir Street, Apt 4B"
+        city:
+          type: string
+          maxLength: 100
+          description: City
+          example: "Dokki"
+        governorate:
+          type: string
+          maxLength: 100
+          description: Governorate
+          example: "Giza"
+        phone:
+          type: string
+          maxLength: 20
+          description: Phone number
+          example: "01012345678"
+        notes:
+          type: string
+          description: Delivery notes
+          example: "Please call before delivery"
