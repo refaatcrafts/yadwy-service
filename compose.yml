@@ -8,6 +8,7 @@ services:
       - "8080:8080"
     environment:
       SPRING_PROFILES_ACTIVE: prod
+      SPRING_THREADS_VIRTUAL_ENABLED: true
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/yadwy_db
       SPRING_DATASOURCE_USERNAME: yadwy_user
       SPRING_DATASOURCE_PASSWORD: yadwy_pass

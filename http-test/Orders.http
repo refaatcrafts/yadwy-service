@@ -15,10 +15,9 @@ Authorization: Bearer {{accessToken}}
     }
   ],
   "shippingAddress": {
-    "recipientName": "Ahmed Mohamed",
-    "street": "15 El-Tahrir Street, Apt 4B",
-    "city": "Dokki",
-    "governorate": "Giza",
+    "customerName": "Ahmed Mohamed",
+    "address": "15 El-Tahrir Street, Apt 4B, Dokki",
+    "province": "Giza",
     "phone": "01012345678",
     "notes": "Please call before delivery"
   },
@@ -42,10 +41,9 @@ Authorization: Bearer {{accessToken}}
     }
   ],
   "shippingAddress": {
-    "recipientName": "Fatima Ali",
-    "street": "25 Nile Street",
-    "city": "Maadi",
-    "governorate": "Cairo",
+    "customerName": "Fatima Ali",
+    "address": "25 Nile Street, Maadi",
+    "province": "Cairo",
     "phone": "01098765432"
   },
   "paymentMethod": "COD"

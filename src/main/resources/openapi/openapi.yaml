@@ -1425,31 +1425,24 @@ components:
     ShippingAddressDto:
       type: object
       required:
-        - recipientName
-        - street
-        - city
-        - governorate
+        - customerName
+        - address
+        - province
         - phone
       properties:
-        recipientName:
+        customerName:
           type: string
           maxLength: 100
-          description: Recipient name
+          description: Customer name
           example: "Ahmed Mohamed"
-        street:
+        address:
           type: string
-          maxLength: 255
-          description: Street address
-          example: "15 El-Tahrir Street, Apt 4B"
-        city:
-          type: string
-          maxLength: 100
-          description: City
-          example: "Dokki"
-        governorate:
+          description: Full address (free text)
+          example: "15 El-Tahrir Street, Apt 4B, Dokki"
+        province:
           type: string
           maxLength: 100
-          description: Governorate
+          description: Province
           example: "Giza"
         phone:
           type: string
