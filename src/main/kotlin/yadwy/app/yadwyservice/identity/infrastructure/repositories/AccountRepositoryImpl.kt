@@ -2,19 +2,19 @@ package yadwy.app.yadwyservice.identity.infrastructure.repositories
 
 import org.springframework.stereotype.Component
 import yadwy.app.yadwyservice.identity.domain.contracts.AccountRepository
-import yadwy.app.yadwyservice.identity.domain.contracts.EventPublisherDispatcher
-import yadwy.app.yadwyservice.identity.domain.events.AccountCreatedEvent
 import yadwy.app.yadwyservice.identity.domain.models.Account
 import yadwy.app.yadwyservice.identity.domain.models.AccountId
 import yadwy.app.yadwyservice.identity.domain.models.Name
 import yadwy.app.yadwyservice.identity.domain.models.PhoneNumber
 import yadwy.app.yadwyservice.identity.infrastructure.database.dao.AccountDao
 import yadwy.app.yadwyservice.identity.infrastructure.database.dbo.AccountDbo
+import yadwy.app.yadwyservice.identity.api.toIntegrationEvent
+import yadwy.app.yadwyservice.sharedkernel.domain.contracts.IntegrationEventPublisher
 
 @Component
 class AccountRepositoryImpl(
     private val accountDao: AccountDao,
-    private val eventPublisherDispatcher: EventPublisherDispatcher
+    private val integrationEventPublisher: IntegrationEventPublisher
 ) : AccountRepository {
     override fun save(account: Account): Account {
         val savedAccount = accountDao.save(
@@ -28,13 +28,9 @@ class AccountRepositoryImpl(
 
         val persistedAccountId = AccountId(savedAccount.id!!)
 
-        // Map events to use the persisted ID instead of the placeholder (0)
-        val eventsWithCorrectId = account.occurredEvents().map { event ->
-            when (event) {
-                is AccountCreatedEvent -> event.copy(accountId = persistedAccountId)
-            }
-        }
-        eventPublisherDispatcher.dispatchAll(eventsWithCorrectId)
+        val integrationEvents = account.occurredEvents()
+            .mapNotNull { it.toIntegrationEvent(persistedAccountId) }
+        integrationEventPublisher.publishAll(integrationEvents)
 
         return Account(
             accountId = persistedAccountId,

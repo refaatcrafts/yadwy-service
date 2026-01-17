@@ -7,6 +7,8 @@ import yadwy.app.yadwyservice.order.infrastructure.database.dao.OrderDao
 import yadwy.app.yadwyservice.order.infrastructure.database.dbo.OrderDbo
 import yadwy.app.yadwyservice.order.infrastructure.database.dbo.OrderLineDbo
 import yadwy.app.yadwyservice.order.infrastructure.database.dbo.SellerOrderDbo
+import yadwy.app.yadwyservice.order.infrastructure.api.toIntegrationEvent
+import yadwy.app.yadwyservice.sharedkernel.domain.contracts.IntegrationEventPublisher
 import yadwy.app.yadwyservice.sharedkernel.domain.models.Amount
 import yadwy.app.yadwyservice.sharedkernel.domain.models.Quantity
 import java.time.Instant
@@ -14,12 +16,19 @@ import java.time.Instant
 @Component
 class OrderRepositoryImpl(
     private val orderDao: OrderDao,
+    private val integrationEventPublisher: IntegrationEventPublisher
 ) : OrderRepository {
 
     override fun save(order: Order): Order {
         val orderDbo = order.toDbo()
         val savedOrder = orderDao.save(orderDbo)
-        return savedOrder.toDomain()
+
+        val persistedOrder = savedOrder.toDomain()
+        val integrationEvents = order.occurredEvents()
+            .mapNotNull { it.toIntegrationEvent(persistedOrder,persistedOrder.getId()) }
+        integrationEventPublisher.publishAll(integrationEvents)
+
+        return persistedOrder
     }
 
     override fun findById(orderId: Long): Order? {

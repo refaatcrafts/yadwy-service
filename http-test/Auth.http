@@ -14,7 +14,7 @@ Content-Type: application/json
 
 {
   "name": "{{ $random.alphabetic(7) }}",
-  "phoneNumber": "201221736199",
+  "phoneNumber": "201221036199",
   "password": "securePassword123"
 }
 > {% client.global.set("accessToken", response.body.accessToken); %}
